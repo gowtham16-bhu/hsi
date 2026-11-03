@@ -55,6 +55,9 @@ class GraphSection(_Strict):
     reverse_factor: float
     co_mention_multi_token: float
     co_mention_single_token: float
+    hub_mode: Literal["drop", "facets"] = "drop"      # decision 0014
+    facet_size: int | None = None
+    facet_iterations: int | None = None
     mention_extractor: PluginSpec | None = None
     edge_scorer: str | None = None          # learned index-time edge selection model (decision 0010)
 

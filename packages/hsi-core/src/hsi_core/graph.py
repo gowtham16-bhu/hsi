@@ -37,10 +37,18 @@ class GraphConfig:
     co_mention: bool = True
     co_mention_multi_token: float = 0.7  # w_c for multi-token entities
     co_mention_single_token: float = 0.45
+    hub_mode: str = "drop"               # "drop": hubs give no edges; "facets": decision 0014
+    facet_size: int | None = None        # facets mode: max passages per facet
+    facet_iterations: int | None = None  # facets mode: power-iteration steps per split
 
     def __post_init__(self) -> None:
         if self.fan_out < 1 or self.hub_degree_cap < 2:
             raise ValueError("fan_out must be >= 1 and hub_degree_cap >= 2")
+        if self.hub_mode not in ("drop", "facets"):
+            raise ValueError("hub_mode must be 'drop' or 'facets'")
+        if self.hub_mode == "facets" and (self.facet_size is None or not 2 <= self.facet_size <= self.hub_degree_cap
+                                          or self.facet_iterations is None or self.facet_iterations < 1):
+            raise ValueError("facets need 2 <= facet_size <= hub_degree_cap and facet_iterations >= 1")
 
 
 def entity_key(surface: str) -> str:
@@ -174,6 +182,8 @@ def build_title_graph(passages: Sequence[Passage], cfg: GraphConfig | None = Non
     Reference implementation: it holds every candidate pair in memory. At scale use
     `graph_stream.build_compact_graph` (decision 0013), which yields the same edges."""
     cfg = cfg or GraphConfig()
+    if cfg.hub_mode != "drop":
+        raise ValueError("the reference builder supports hub_mode='drop' only; use graph_stream.build_compact_graph")
     prep = prepare(passages, cfg, extra_anchors, mentions)
     by_id, own, anchors, ment, members = prep.by_id, prep.own, prep.anchors, prep.ment, prep.members
     participants, hubs, ntok = prep.participants, prep.hubs, prep.ntok

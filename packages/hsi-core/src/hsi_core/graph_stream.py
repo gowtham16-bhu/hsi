@@ -10,6 +10,10 @@ which grows with Σ_e k_e² over entities. Here each source u generates only its
 keeps the best candidate per destination, caps to the top m, and appends to the CSR arrays.
 Contributions are applied in the same order as the reference builder, so ties resolve identically and
 the resulting arrays are equal (test `test_streaming_builder_equals_reference`).
+
+Hub facets (decision 0014, `hub_mode="facets"`): a hub entity keeps its forward anchor edges, and its
+participants are split by vector into facets of at most `facet_size`; co-mention and reverse anchor edges
+are formed within a facet only.
 """
 from __future__ import annotations
 
@@ -22,6 +26,31 @@ import numpy as np
 from hsi_core.csr import CompactGraph, cos_uv
 from hsi_core.graph import EdgeScorer, GraphConfig, prepare
 from hsi_core.model import EdgeType, Passage
+
+
+def hub_facets(x: np.ndarray, max_size: int, iterations: int) -> list[np.ndarray]:
+    """Split rows of x into groups of at most `max_size` by recursive median bisection along the principal
+    direction (power iteration from the row farthest from the mean). Deterministic and balanced."""
+    out: list[np.ndarray] = []
+    stack = [np.arange(len(x))]
+    while stack:
+        g = stack.pop()
+        if len(g) <= max_size:
+            out.append(g)
+            continue
+        xc = x[g] - x[g].mean(axis=0)
+        v = xc[int(np.argmax(np.einsum("ij,ij->i", xc, xc)))].astype(np.float64)
+        for _ in range(iterations):
+            nv = xc.T @ (xc @ v)
+            norm = float(np.linalg.norm(nv))
+            if norm == 0.0:
+                break
+            v = nv / norm
+        order = np.argsort(xc @ v, kind="stable")
+        half = len(g) // 2
+        stack.append(g[order[half:]])
+        stack.append(g[order[:half]])
+    return out
 
 
 def build_compact_graph(passages: Sequence[Passage], ids: Sequence[str], vecs: np.ndarray,
@@ -50,12 +79,24 @@ def build_compact_graph(passages: Sequence[Passage], ids: Sequence[str], vecs: n
         for pid in mem:
             member_of[pid].append(ent)
     sorted_members: dict[str, list[str]] = {}
+    pos_of = {pid: i for i, pid in enumerate(ids)}
+    facets = cfg.hub_mode == "facets"
+    facet_of: dict[tuple[str, str], int] = {}          # (hub entity, passage) -> facet index
+    facet_members: dict[tuple[str, int], list[str]] = {}
+    if facets:
+        vecs32 = np.asarray(vecs, dtype=np.float32)
+        for ent in sorted(hubs):
+            pids = sorted(members[ent])
+            rows = vecs32[[pos_of[p] for p in pids]]
+            for j, grp in enumerate(hub_facets(rows, cfg.facet_size, cfg.facet_iterations)):
+                facet_members[(ent, j)] = sorted(pids[g] for g in grp.tolist())
+                for g in grp.tolist():
+                    facet_of[(ent, pids[g])] = j
 
     def anchor_w(ent: str, n_targets: int) -> float:
         base = cfg.weight_multi_token if prep.ntok(ent) > 1 else cfg.weight_single_token
         return base / math.sqrt(n_targets)
 
-    pos_of = {pid: i for i, pid in enumerate(ids)}
     indptr = np.zeros(len(ids) + 1, dtype=np.int64)
     out_dst: list[int] = []
     out_w: list[float] = []
@@ -78,17 +119,20 @@ def build_compact_graph(passages: Sequence[Passage], ids: Sequence[str], vecs: n
         for pos, (ent, sal) in enumerate(ment.get(u, {}).items()):
             al = anchors.get(ent, ())
             targets = [t for t in al if t != u]
-            if not targets or ent in hubs:
+            if not targets or (ent in hubs and not facets):
                 continue
             w = anchor_w(ent, len(targets))
             for t, dst in enumerate(targets):
                 phase1.append(((order[u], pos, t, 0), dst, w, ent, sal))
         if cfg.bidirectional:
             for ent in anchored_by.get(u, ()):
-                if ent in hubs:
+                if ent in hubs and not facets:
                     continue
                 al = anchors[ent]
+                mine = facet_of.get((ent, u)) if ent in hubs else None
                 for x, pos in mentioners.get(ent, ()):
+                    if mine is not None and facet_of[(ent, x)] != mine:
+                        continue
                     targets = [t for t in al if t != x]
                     if not targets:
                         continue
@@ -105,14 +149,19 @@ def build_compact_graph(passages: Sequence[Passage], ids: Sequence[str], vecs: n
         if cfg.co_mention:
             for ent in sorted(member_of.get(u, ()), key=ent_rank.__getitem__):
                 mem = members[ent]
-                k = len(mem)
-                if k < 2 or ent in hubs:
+                if ent in hubs:
+                    if not facets:
+                        continue
+                    pids = facet_members[(ent, facet_of[(ent, u)])]
+                else:
+                    pids = sorted_members.get(ent)
+                    if pids is None:
+                        pids = sorted_members[ent] = sorted(mem)
+                k = len(pids)
+                if k < 2:
                     continue
                 base = cfg.co_mention_multi_token if prep.ntok(ent) > 1 else cfg.co_mention_single_token
                 w = base / math.sqrt(k - 1)
-                pids = sorted_members.get(ent)
-                if pids is None:
-                    pids = sorted_members[ent] = sorted(mem)
                 sal = mem[u]
                 for b in pids:
                     if b != u:
@@ -152,5 +201,6 @@ def build_compact_graph(passages: Sequence[Passage], ids: Sequence[str], vecs: n
                      bridge=np.fromiter((bpos[b] for b in out_bridge), dtype=np.int32, count=len(out_bridge)),
                      cos_uv=cos_uv(vecs, src, dst), bridges=bridges, bridge_log_df=np.log1p(df))
     stats = {"passages": len(ids), "entities": len(prep.participants), "entities_with_anchor": len(anchors),
-             "raw_edges": raw, "capped_edges": g.edge_count, "hubs": len(hubs)}
+             "raw_edges": raw, "capped_edges": g.edge_count, "hubs": len(hubs),
+             "hub_facets": len(facet_members)}
     return g, stats

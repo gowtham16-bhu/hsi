@@ -1,5 +1,7 @@
 import itertools
 
+import pytest
+
 from hsi_core.chains import ChainConfig, enumerate_chains, select_by_prior
 from hsi_core.graph import GraphConfig, build_title_graph, entity_key_for_title
 from hsi_core.model import PUBLIC, Passage
@@ -164,3 +166,49 @@ def test_streaming_builder_equals_reference(mini_musique):
         got, stats = build_compact_graph(ps, ids, vecs, **kw)
         _assert_same_csr(got, ref)
         assert stats["raw_edges"] == ref_graph.raw_edge_count and stats["hubs"] == len(ref_graph.hubs)
+
+
+def test_hub_facets_split_is_balanced_deterministic_and_follows_vectors():
+    import numpy as np
+
+    from hsi_core.graph_stream import hub_facets
+    rng = np.random.default_rng(0)
+    a = rng.normal(size=(20, 8)) * 0.05 + np.eye(8)[0]
+    b = rng.normal(size=(20, 8)) * 0.05 + np.eye(8)[1]
+    x = np.vstack([a, b])
+    groups = hub_facets(x, 10, 20)
+    assert sorted(np.concatenate(groups).tolist()) == list(range(40))
+    assert all(5 <= len(g) <= 10 for g in groups)
+    assert all(set(g.tolist()) <= set(range(20)) or set(g.tolist()) <= set(range(20, 40)) for g in groups)
+    assert [g.tolist() for g in groups] == [g.tolist() for g in hub_facets(x, 10, 20)]
+
+
+def test_facets_keep_hub_anchor_edges_and_link_within_facets_only():
+    """Decision 0014: a hub keeps forward anchor edges; co-mention and reverse edges stay inside a facet."""
+    import numpy as np
+
+    from hsi_core.graph import entity_key
+    from hsi_core.graph_stream import build_compact_graph
+    hub = _p("Hub", "The hub entity.")
+    others = [_p(f"P{i}", f"Passage {i} mentions Hub.") for i in range(10)]
+    ps = [hub, *others]
+    ids = [p.id for p in ps]
+    rng = np.random.default_rng(1)
+    vecs = np.vstack([np.eye(4)[2]] + [np.eye(4)[0 if i < 5 else 1] + rng.normal(size=4) * 0.01 for i in range(10)])
+    vecs = (vecs / np.linalg.norm(vecs, axis=1, keepdims=True)).astype(np.float32)
+    cluster = {o.id: (0 if i < 5 else 1) for i, o in enumerate(others)}
+    drop, s_drop = build_compact_graph(ps, ids, vecs, GraphConfig(fan_out=20, hub_degree_cap=5))
+    assert s_drop["hubs"] == 1 and drop.edge_count == 0
+    cfg = GraphConfig(fan_out=20, hub_degree_cap=5, hub_mode="facets", facet_size=4, facet_iterations=20)
+    g, stats = build_compact_graph(ps, ids, vecs, cfg)
+    assert stats["hub_facets"] >= 3
+    edges = {(ids[u], ids[int(v)], int(t)) for u in range(g.n)
+             for v, t in zip(g.dst[g.edges_of(u)], g.co_mention[g.edges_of(u)], strict=True)}
+    assert all((o.id, hub.id, 0) in edges for o in others)               # forward anchor edge to the hub's page
+    co = [(a, b) for a, b, t in edges if t == 1]
+    assert co and all(cluster[a] == cluster[b] for a, b in co if a != hub.id and b != hub.id)
+    assert {g.bridges[int(b)] for b in g.bridge} == {entity_key("Hub")}
+    with pytest.raises(ValueError):
+        build_title_graph(ps, cfg)
+    with pytest.raises(ValueError):
+        GraphConfig(hub_mode="facets", facet_size=1, facet_iterations=5)
