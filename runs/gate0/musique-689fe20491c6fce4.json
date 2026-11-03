@@ -1,0 +1,943 @@
+{
+  "kind": "gate0",
+  "config": {
+    "dataset": "musique",
+    "data_file": "data/musique/musique_ans_v1.0_dev.jsonl",
+    "sample_size": 1000,
+    "seed": 1,
+    "exclude_sample": {
+      "seed": 0,
+      "size": 1000
+    },
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 32,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "metadata_store": {
+      "plugin": "postgres",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/gate0",
+    "graph": {
+      "fan_out": 8,
+      "hub_degree_cap": 50,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      }
+    },
+    "chains": {
+      "max_passages": 2,
+      "beam_level2": 3,
+      "beam_level3": 2,
+      "budget_ratio": null,
+      "key_mode": "mean"
+    },
+    "systems": [
+      {
+        "name": "bm25",
+        "kind": "bm25",
+        "index": "passages",
+        "options": {
+          "k1": 1.2,
+          "b": 0.75,
+          "stopwords": []
+        }
+      },
+      {
+        "name": "dense",
+        "kind": "dense",
+        "index": "passages",
+        "options": {}
+      },
+      {
+        "name": "expand-vec",
+        "kind": "expand",
+        "index": "passages",
+        "options": {
+          "seeds": 5,
+          "beam": 3,
+          "max_passages": 4,
+          "variant": "vec"
+        }
+      },
+      {
+        "name": "ppr",
+        "kind": "ppr",
+        "index": "passages",
+        "options": {
+          "seeds": 5,
+          "restart": 0.5,
+          "iterations": 50,
+          "tolerance": 1e-06
+        }
+      },
+      {
+        "name": "hop-passages-2",
+        "kind": "hop",
+        "index": "passages",
+        "options": {
+          "rounds": 2,
+          "beam": 5,
+          "per_round": 10,
+          "update": "vec",
+          "vec_weight": 1.0
+        }
+      },
+      {
+        "name": "hop-passages-4",
+        "kind": "hop",
+        "index": "passages",
+        "options": {
+          "rounds": 4,
+          "beam": 5,
+          "per_round": 10,
+          "update": "vec",
+          "vec_weight": 1.0
+        }
+      },
+      {
+        "name": "hop-shortcuts-2",
+        "kind": "hop",
+        "index": "shortcuts",
+        "options": {
+          "rounds": 2,
+          "beam": 5,
+          "per_round": 10,
+          "update": "vec",
+          "vec_weight": 1.0
+        }
+      }
+    ],
+    "top_k_hits": 50,
+    "passage_budgets": [
+      5,
+      10
+    ],
+    "bootstrap": 1000,
+    "decision": {
+      "name": "gate0-prime-rq1-prime",
+      "all_of": [
+        {
+          "candidate": "hop-shortcuts-2",
+          "baseline": "hop-passages-2",
+          "slice": "3+4",
+          "k": 10,
+          "min_difference": 0.05,
+          "ci_low_above": 0.0,
+          "ci_low_at_least": null,
+          "max_latency_ratio": null
+        },
+        {
+          "candidate": "hop-shortcuts-2",
+          "baseline": "hop-passages-4",
+          "slice": "3+4",
+          "k": 10,
+          "min_difference": null,
+          "ci_low_above": null,
+          "ci_low_at_least": -0.02,
+          "max_latency_ratio": null
+        },
+        {
+          "candidate": "hop-shortcuts-2",
+          "baseline": "ppr",
+          "slice": "3+4",
+          "k": 10,
+          "min_difference": null,
+          "ci_low_above": null,
+          "ci_low_at_least": 0.0,
+          "max_latency_ratio": null
+        },
+        {
+          "candidate": "hop-shortcuts-2",
+          "baseline": "expand-vec",
+          "slice": "3+4",
+          "k": 10,
+          "min_difference": null,
+          "ci_low_above": null,
+          "ci_low_at_least": 0.0,
+          "max_latency_ratio": null
+        }
+      ]
+    }
+  },
+  "config_hash": "689fe20491c6fce4",
+  "code_version": "unversioned",
+  "data_hash": "15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b",
+  "encoder": "onnx:BAAI/bge-small-en-v1.5:512:cls",
+  "dataset": {
+    "name": "musique",
+    "questions": 1000,
+    "passages": 11566,
+    "by_hop": {
+      "2": 532,
+      "3": 312,
+      "4": 156
+    },
+    "excluded_questions": 1000
+  },
+  "graph": {
+    "passages": 11566,
+    "entities": 53293,
+    "entities_with_anchor": 9758,
+    "raw_edges": 587052,
+    "capped_edges": 80462,
+    "hubs": 201,
+    "capped_co_mention": 63062,
+    "capped_mention": 17400,
+    "config": {
+      "fan_out": 8,
+      "hub_degree_cap": 50,
+      "min_title_chars": 3,
+      "bidirectional": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention": true,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45
+    }
+  },
+  "chains": {
+    "candidates_by_level": {
+      "1": 80462
+    },
+    "stored": 80462
+  },
+  "index_entries": {
+    "passages": 11566,
+    "shortcuts": 92028
+  },
+  "build_seconds": {
+    "graph_and_chains": 13.06667977899997,
+    "passage_index": 307.5540563750001,
+    "shortcut_index": 6.941180363000058
+  },
+  "llm_calls": 0,
+  "recall": {
+    "bm25": {
+      "all": {
+        "r@5": {
+          "mean": 0.1,
+          "low": 0.081,
+          "high": 0.118,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.145,
+          "low": 0.125,
+          "high": 0.16702499999999998,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.18045112781954886,
+          "low": 0.14849624060150377,
+          "high": 0.21245300751879695,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.24812030075187969,
+          "low": 0.21428571428571427,
+          "high": 0.2857142857142857,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.01282051282051282,
+          "low": 0.003205128205128205,
+          "high": 0.02564102564102564,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.038461538461538464,
+          "low": 0.019230769230769232,
+          "high": 0.060897435897435896,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.00641025641025641,
+          "low": 0.0,
+          "high": 0.019230769230769232,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.008547008547008548,
+          "low": 0.002136752136752137,
+          "high": 0.017094017094017096,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.027777777777777776,
+          "low": 0.014957264957264958,
+          "high": 0.04278846153846149,
+          "n": 468
+        }
+      }
+    },
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.153,
+          "low": 0.13,
+          "high": 0.175,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.224,
+          "low": 0.197,
+          "high": 0.251,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.2669172932330827,
+          "low": 0.231203007518797,
+          "high": 0.30639097744360905,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.34774436090225563,
+          "low": 0.3101503759398496,
+          "high": 0.3890977443609023,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.035256410256410256,
+          "low": 0.016025641025641024,
+          "high": 0.057692307692307696,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.125,
+          "low": 0.08974358974358974,
+          "high": 0.16346153846153846,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.023504273504273504,
+          "low": 0.010683760683760684,
+          "high": 0.038461538461538464,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.08333333333333333,
+          "low": 0.05982905982905983,
+          "high": 0.10897435897435898,
+          "n": 468
+        }
+      }
+    },
+    "expand-vec": {
+      "all": {
+        "r@5": {
+          "mean": 0.222,
+          "low": 0.196,
+          "high": 0.247,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.324,
+          "low": 0.296,
+          "high": 0.353,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.38721804511278196,
+          "low": 0.34210526315789475,
+          "high": 0.4266917293233083,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.5357142857142857,
+          "low": 0.4924812030075188,
+          "high": 0.5770676691729323,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.04487179487179487,
+          "low": 0.022435897435897436,
+          "high": 0.07051282051282051,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.11858974358974358,
+          "low": 0.08333333333333333,
+          "high": 0.15384615384615385,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.01282051282051282,
+          "low": 0.0,
+          "high": 0.03205128205128205,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.01282051282051282,
+          "low": 0.0,
+          "high": 0.03205128205128205,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.03418803418803419,
+          "low": 0.019230769230769232,
+          "high": 0.05128205128205128,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.08333333333333333,
+          "low": 0.05982905982905983,
+          "high": 0.1111111111111111,
+          "n": 468
+        }
+      }
+    },
+    "ppr": {
+      "all": {
+        "r@5": {
+          "mean": 0.154,
+          "low": 0.131,
+          "high": 0.177,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.348,
+          "low": 0.318,
+          "high": 0.377,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.26879699248120303,
+          "low": 0.23303571428571426,
+          "high": 0.30639097744360905,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.5714285714285714,
+          "low": 0.5319078947368421,
+          "high": 0.6109022556390977,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.035256410256410256,
+          "low": 0.016025641025641024,
+          "high": 0.057692307692307696,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.14102564102564102,
+          "low": 0.10256410256410256,
+          "high": 0.18269230769230768,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.023504273504273504,
+          "low": 0.010683760683760684,
+          "high": 0.038461538461538464,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.09401709401709402,
+          "low": 0.06837606837606838,
+          "high": 0.12179487179487179,
+          "n": 468
+        }
+      }
+    },
+    "hop-passages-2": {
+      "all": {
+        "r@5": {
+          "mean": 0.138,
+          "low": 0.116,
+          "high": 0.16,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.243,
+          "low": 0.217,
+          "high": 0.269,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.2556390977443609,
+          "low": 0.21804511278195488,
+          "high": 0.2932330827067669,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.41353383458646614,
+          "low": 0.37406015037593987,
+          "high": 0.4548872180451128,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.00641025641025641,
+          "low": 0.0,
+          "high": 0.016025641025641024,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.07371794871794872,
+          "low": 0.04487179487179487,
+          "high": 0.10256410256410256,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.004273504273504274,
+          "low": 0.0,
+          "high": 0.010683760683760684,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.049145299145299144,
+          "low": 0.03205128205128205,
+          "high": 0.07051282051282051,
+          "n": 468
+        }
+      }
+    },
+    "hop-passages-4": {
+      "all": {
+        "r@5": {
+          "mean": 0.102,
+          "low": 0.08397500000000001,
+          "high": 0.122,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.182,
+          "low": 0.158,
+          "high": 0.206,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.19172932330827067,
+          "low": 0.15789473684210525,
+          "high": 0.22561090225563904,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.3101503759398496,
+          "low": 0.2706766917293233,
+          "high": 0.34962406015037595,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.05128205128205128,
+          "low": 0.028846153846153848,
+          "high": 0.07692307692307693,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.00641025641025641,
+          "low": 0.0,
+          "high": 0.019230769230769232,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.03632478632478633,
+          "low": 0.021367521367521368,
+          "high": 0.05555555555555555,
+          "n": 468
+        }
+      }
+    },
+    "hop-shortcuts-2": {
+      "all": {
+        "r@5": {
+          "mean": 0.224,
+          "low": 0.2,
+          "high": 0.251,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.309,
+          "low": 0.281,
+          "high": 0.339025,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.40225563909774437,
+          "low": 0.35902255639097747,
+          "high": 0.4417293233082707,
+          "n": 532
+        },
+        "r@10": {
+          "mean": 0.5300751879699248,
+          "low": 0.48872180451127817,
+          "high": 0.5695488721804511,
+          "n": 532
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.028846153846153848,
+          "low": 0.01282051282051282,
+          "high": 0.04807692307692308,
+          "n": 312
+        },
+        "r@10": {
+          "mean": 0.08333333333333333,
+          "low": 0.05448717948717949,
+          "high": 0.11538461538461539,
+          "n": 312
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.00641025641025641,
+          "low": 0.0,
+          "high": 0.019230769230769232,
+          "n": 156
+        },
+        "r@10": {
+          "mean": 0.00641025641025641,
+          "low": 0.0,
+          "high": 0.019230769230769232,
+          "n": 156
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.021367521367521368,
+          "low": 0.008547008547008548,
+          "high": 0.03632478632478633,
+          "n": 468
+        },
+        "r@10": {
+          "mean": 0.057692307692307696,
+          "low": 0.03632478632478633,
+          "high": 0.07905982905982906,
+          "n": 468
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "hop-shortcuts-2|hop-passages-2|3+4|10": {
+      "mean": 0.008547008547008548,
+      "low": -0.014957264957264958,
+      "high": 0.03205128205128205,
+      "n": 468
+    },
+    "hop-shortcuts-2|hop-passages-4|3+4|10": {
+      "mean": 0.021367521367521368,
+      "low": -0.004273504273504274,
+      "high": 0.04487179487179487,
+      "n": 468
+    },
+    "hop-shortcuts-2|ppr|3+4|10": {
+      "mean": -0.03632478632478633,
+      "low": -0.06623931623931624,
+      "high": -0.008547008547008548,
+      "n": 468
+    },
+    "hop-shortcuts-2|expand-vec|3+4|10": {
+      "mean": -0.02564102564102564,
+      "low": -0.051335470085470084,
+      "high": 0.0,
+      "n": 468
+    }
+  },
+  "latency_ms": {
+    "bm25": {
+      "p50": 1.2911019998682605,
+      "p95": 2.1381230496899652
+    },
+    "dense": {
+      "p50": 1.8536709999352752,
+      "p95": 2.6053869005863812
+    },
+    "expand-vec": {
+      "p50": 9.71917749984641,
+      "p95": 15.66472230006184
+    },
+    "ppr": {
+      "p50": 12.728824000532768,
+      "p95": 20.152705550253813
+    },
+    "hop-passages-2": {
+      "p50": 10.601770999983273,
+      "p95": 15.76967324981524
+    },
+    "hop-passages-4": {
+      "p50": 24.117633000059868,
+      "p95": 36.386816699769035
+    },
+    "hop-shortcuts-2": {
+      "p50": 68.05103600026996,
+      "p95": 85.40989529988109
+    }
+  },
+  "ann_calls_per_question": {
+    "hop-passages-2": 6.0,
+    "hop-passages-4": 16.0,
+    "hop-shortcuts-2": 6.0
+  },
+  "waterfall": {
+    "hop-shortcuts-2": {
+      "2hop@5": {
+        "link_missed": 0.08458646616541353,
+        "pruned": 0.21052631578947367,
+        "not_stored": 0.0,
+        "not_retrieved": 0.3026315789473684,
+        "ok": 0.40225563909774437,
+        "n": 532
+      },
+      "2hop@10": {
+        "link_missed": 0.08082706766917293,
+        "pruned": 0.19924812030075187,
+        "not_stored": 0.0,
+        "not_retrieved": 0.18984962406015038,
+        "ok": 0.5300751879699248,
+        "n": 532
+      },
+      "3hop@5": {
+        "link_missed": 0.1346153846153846,
+        "pruned": 0.8365384615384616,
+        "not_stored": 0.0,
+        "not_retrieved": 0.0,
+        "ok": 0.028846153846153848,
+        "n": 312
+      },
+      "3hop@10": {
+        "link_missed": 0.1282051282051282,
+        "pruned": 0.7884615384615384,
+        "not_stored": 0.0,
+        "not_retrieved": 0.0,
+        "ok": 0.08333333333333333,
+        "n": 312
+      },
+      "4hop@5": {
+        "link_missed": 0.2692307692307692,
+        "pruned": 0.7243589743589743,
+        "not_stored": 0.0,
+        "not_retrieved": 0.0,
+        "ok": 0.00641025641025641,
+        "n": 156
+      },
+      "4hop@10": {
+        "link_missed": 0.2692307692307692,
+        "pruned": 0.7243589743589743,
+        "not_stored": 0.0,
+        "not_retrieved": 0.0,
+        "ok": 0.00641025641025641,
+        "n": 156
+      }
+    }
+  },
+  "encoder_cache": {
+    "hits": 16072,
+    "misses": 8060
+  },
+  "decision": {
+    "rule": "gate0-prime-rq1-prime",
+    "status": "fail",
+    "checks": [
+      {
+        "candidate": "hop-shortcuts-2",
+        "baseline": "hop-passages-2",
+        "slice": "3+4",
+        "k": 10,
+        "min_difference": 0.05,
+        "ci_low_above": 0.0,
+        "ci_low_at_least": null,
+        "max_latency_ratio": null,
+        "difference": {
+          "mean": 0.008547008547008548,
+          "low": -0.014957264957264958,
+          "high": 0.03205128205128205,
+          "n": 468
+        },
+        "pass": false
+      },
+      {
+        "candidate": "hop-shortcuts-2",
+        "baseline": "hop-passages-4",
+        "slice": "3+4",
+        "k": 10,
+        "min_difference": null,
+        "ci_low_above": null,
+        "ci_low_at_least": -0.02,
+        "max_latency_ratio": null,
+        "difference": {
+          "mean": 0.021367521367521368,
+          "low": -0.004273504273504274,
+          "high": 0.04487179487179487,
+          "n": 468
+        },
+        "pass": true
+      },
+      {
+        "candidate": "hop-shortcuts-2",
+        "baseline": "ppr",
+        "slice": "3+4",
+        "k": 10,
+        "min_difference": null,
+        "ci_low_above": null,
+        "ci_low_at_least": 0.0,
+        "max_latency_ratio": null,
+        "difference": {
+          "mean": -0.03632478632478633,
+          "low": -0.06623931623931624,
+          "high": -0.008547008547008548,
+          "n": 468
+        },
+        "pass": false
+      },
+      {
+        "candidate": "hop-shortcuts-2",
+        "baseline": "expand-vec",
+        "slice": "3+4",
+        "k": 10,
+        "min_difference": null,
+        "ci_low_above": null,
+        "ci_low_at_least": 0.0,
+        "max_latency_ratio": null,
+        "difference": {
+          "mean": -0.02564102564102564,
+          "low": -0.051335470085470084,
+          "high": 0.0,
+          "n": 468
+        },
+        "pass": false
+      }
+    ]
+  },
+  "total_seconds": 480.2300023830003,
+  "run_id": "a981d947-d441-43f3-9f79-cc2225bdb5b5",
+  "corpus_id": "musique-n1000-s1-15fa6379"
+}

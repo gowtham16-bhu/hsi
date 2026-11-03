@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hsi-harness"
+version = "0.1.0"
+description = "HSI evaluation harness: dataset loaders, gate runners, reports"
+requires-python = ">=3.11"
+dependencies = ["hsi-core", "numpy>=1.26", "pydantic>=2.6", "pyyaml>=6.0"]
+
+[project.scripts]
+hsi-gate0 = "hsi_harness.cli:main"
+hsi-train-transitions = "hsi_harness.train_transitions:main"
+hsi-train-edges = "hsi_harness.train_edges:main"
+hsi-bench-scale = "hsi_harness.bench_scale:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hsi_harness"]

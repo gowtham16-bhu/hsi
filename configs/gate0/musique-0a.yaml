@@ -1,0 +1,43 @@
+# Gate 0a (decision 0002): mean-of-vectors keys, full chains up to 3 passages.
+dataset: musique
+data_file: data/musique/musique_ans_v1.0_dev.jsonl
+sample_size: 1000
+seed: 0
+encoder:
+  plugin: onnx
+  options:
+    model: BAAI/bge-small-en-v1.5
+    onnx_file: onnx/model.onnx
+    max_seq_length: 512
+    batch_size: 32
+    query_instruction: "Represent this sentence for searching relevant passages: "   # from the model card
+vector_store: { plugin: faiss, options: {} }
+metadata_store: { plugin: postgres }      # reads HSI_PG_DSN
+cache_dir: .cache/hsi
+out_dir: runs/gate0
+graph:
+  fan_out: 8
+  hub_degree_cap: 50
+  bidirectional: true
+  co_mention: true
+  weight_multi_token: 0.9
+  weight_single_token: 0.6
+  reverse_factor: 0.85
+  co_mention_multi_token: 0.7
+  co_mention_single_token: 0.45
+  mention_extractor:
+    plugin: capitalized
+    options: { min_cap_ratio: 0.5, min_join_count: 2, min_join_share: 0.8, max_join_tokens: 2, max_words: 6, min_chars: 3, max_clitic_chars: 2 }
+top_k_hits: 50
+passage_budgets: [5, 10]
+bootstrap: 1000
+chains: { max_passages: 3, beam_level2: 3, beam_level3: 2, budget_ratio: null, key_mode: mean }
+systems:
+  - { name: bm25, kind: bm25, options: { k1: 1.2, b: 0.75, stopwords: [] } }
+  - { name: dense, kind: dense }
+  - { name: expand-vec, kind: expand, options: { seeds: 5, beam: 3, max_passages: 3, variant: vec } }
+  - { name: hsi, kind: dense, index: shortcuts }
+decision:
+  name: gate0-rq1
+  all_of:
+    - { candidate: hsi, baseline: expand-vec, slice: "3", k: 10, min_difference: 0.05, ci_low_above: 0.0, max_latency_ratio: 1.5 }

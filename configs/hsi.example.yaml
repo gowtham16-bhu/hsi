@@ -1,0 +1,58 @@
+# HSI example configuration.
+# Plugins are selected by name. Core parameters fall back to the defaults in specs/03-core-engine.md.
+
+deployment:
+  mode: pilot                 # development | pilot | production | airgapped
+  egress_allowlist: []        # empty = no outbound network at all
+
+identity:
+  plugin: oidc
+  issuer_env: OIDC_ISSUER
+  group_claim: groups
+
+storage:
+  metadata: { plugin: postgres, dsn_env: HSI_PG_DSN }
+  vectors:  { plugin: faiss, path: /var/lib/hsi/vectors }
+
+models:
+  encoder:  { plugin: bge, name: bge-small-en-v1.5, device: auto }
+  reranker: { plugin: bge-reranker, device: auto }
+  nli:      { plugin: open-nli, device: auto }
+  reader:
+    plugin: openai-compatible        # any server speaking this API, e.g. an on-prem model server
+    base_url_env: HSI_READER_URL     # must also appear in egress_allowlist if outside the cluster
+    max_calls_per_question: 1        # 2 in MAX mode
+
+redactor: { plugin: secrets-basic }
+
+connectors:
+  # Any source can be added. These are examples only.
+  - plugin: rest-declarative
+    file: connectors/findings-tool.yaml
+    schedule: "*/10 * * * *"
+    trust: 0.9
+  - plugin: sarif
+    path: /data/exports/sarif/
+    trust: 0.9
+  - plugin: cyclonedx
+    path: /data/exports/sbom/
+    trust: 1.0
+  - plugin: osv
+    mirror_path: /data/osv/
+    trust: 0.8
+  - plugin: markdown-files
+    path: /data/runbooks/
+    acl: { principals: ["group:sre"] }
+    trust: 0.7
+
+core:
+  chains:    { max_hops: 4, fan_out: 8, beams: [3, 2], hub_degree_cap: 50 }
+  composer:  { key_mode: hybrid, alignment_weight: 0.3, drift_threshold: 0.15 }
+  selection: { budget_ratio: 2.0, level_split: [0.5, 0.3, 0.2] }
+  retrieval: { mode: quality, top_k: 20, rerank_pool: 50, passage_budget: 8 }
+  permissions: { policy: hide, strict_shortcuts: false }
+  verification: { target_error_rate: 0.05 }
+
+surfaces:
+  - plugin: web
+  - plugin: rest-api

@@ -1,0 +1,21 @@
+# Workspace-level tool configuration. Each package under packages/ has its own pyproject.toml.
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["packages/*/src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003", "SIM905"]   # unicode math in strings; word lists as split strings
+
+[tool.ruff.lint.per-file-ignores]
+"docs/**" = ["E501", "E741"]   # diagram data tables
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "postgres: needs a running PostgreSQL (HSI_PG_DSN)",
+    "model: needs downloaded encoder weights",
+]
+addopts = "-ra"

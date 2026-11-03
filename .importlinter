@@ -1,0 +1,25 @@
+[importlinter]
+root_packages =
+    hsi_core
+    hsi_harness
+    hsi_plugins_faiss
+    hsi_plugins_basic
+    hsi_plugins_postgres
+    hsi_plugins_osv
+    hsi_connector_kit
+include_external_packages = True
+
+[importlinter:contract:core-is-independent]
+name = The core imports no plugins, harness, network, LLM or vendor libraries
+type = forbidden
+source_modules =
+    hsi_core
+forbidden_modules =
+    hsi_harness
+    hsi_plugins_faiss
+    hsi_plugins_basic
+    hsi_plugins_postgres
+    hsi_plugins_osv
+    hsi_connector_kit
+    faiss
+    psycopg

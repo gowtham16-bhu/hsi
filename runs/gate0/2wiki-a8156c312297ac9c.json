@@ -1,0 +1,481 @@
+{
+  "kind": "gate0",
+  "config": {
+    "dataset": "2wiki",
+    "data_file": "data/2wiki/dev.json",
+    "sample_size": 1000,
+    "seed": 0,
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 32,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "metadata_store": {
+      "plugin": "postgres",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/gate0",
+    "graph": {
+      "fan_out": 8,
+      "hub_degree_cap": 50,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      }
+    },
+    "chains": {
+      "max_passages": 3,
+      "beam_level2": 3,
+      "beam_level3": 2,
+      "budget_ratio": null,
+      "key_mode": "mean"
+    },
+    "retrieval": {
+      "top_k_hits": 50,
+      "passage_budgets": [
+        5,
+        10
+      ]
+    },
+    "expansion": {
+      "seeds": 5,
+      "beam": 3,
+      "variants": [
+        "vec"
+      ]
+    },
+    "bm25_k1": 1.2,
+    "bm25_b": 0.75,
+    "bm25_stopwords": [],
+    "bootstrap": 1000
+  },
+  "config_hash": "a8156c312297ac9c",
+  "code_version": "unversioned",
+  "data_hash": "48b9bdc69654dc580fda5f935a48b88cb89f11887587310af60d406c8d0111a6",
+  "encoder": "onnx:BAAI/bge-small-en-v1.5:512:cls",
+  "dataset": {
+    "name": "2wiki",
+    "questions": 1000,
+    "passages": 6354,
+    "by_hop": {
+      "2": 779,
+      "4": 221
+    }
+  },
+  "graph": {
+    "passages": 6354,
+    "entities": 35026,
+    "entities_with_anchor": 6317,
+    "raw_edges": 279038,
+    "capped_edges": 40732,
+    "hubs": 86,
+    "capped_co_mention": 36042,
+    "capped_mention": 4690,
+    "config": {
+      "fan_out": 8,
+      "hub_degree_cap": 50,
+      "min_title_chars": 3,
+      "bidirectional": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention": true,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45
+    }
+  },
+  "chains": {
+    "candidates_by_level": {
+      "1": 40732,
+      "2": 120079
+    },
+    "stored": 160811,
+    "budget": null
+  },
+  "index_entries": {
+    "dense": 6354,
+    "hsi": 167165,
+    "hsi_by_level": {
+      "0": 6354,
+      "1": 40732,
+      "2": 120079
+    }
+  },
+  "build_seconds": {
+    "graph_and_chains": 9.479390812999554,
+    "dense_index": 0.21583963200009748,
+    "hsi_index": 8.823466674999509
+  },
+  "llm_calls": 0,
+  "recall": {
+    "bm25": {
+      "all": {
+        "r@5": {
+          "mean": 0.314,
+          "low": 0.286,
+          "high": 0.345,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.384,
+          "low": 0.352,
+          "high": 0.413025,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.4017971758664955,
+          "low": 0.36582156611039796,
+          "high": 0.43645699614890887,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.49165596919127086,
+          "low": 0.45696405648267013,
+          "high": 0.5276315789473685,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.004524886877828055,
+          "low": 0.0,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.004524886877828055,
+          "low": 0.0,
+          "high": 0.013574660633484163,
+          "n": 221
+        }
+      }
+    },
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.438,
+          "low": 0.407,
+          "high": 0.468,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.48,
+          "low": 0.449,
+          "high": 0.51,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.5622593068035944,
+          "low": 0.5275673940949936,
+          "high": 0.5982349165596919,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.6161745827984596,
+          "low": 0.580198973042362,
+          "high": 0.6508344030808729,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 221
+        }
+      }
+    },
+    "expand-vec": {
+      "all": {
+        "r@5": {
+          "mean": 0.415,
+          "low": 0.385,
+          "high": 0.445,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.572,
+          "low": 0.542,
+          "high": 0.602,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.5314505776636713,
+          "low": 0.4967586649550706,
+          "high": 0.5673940949935815,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.7214377406931964,
+          "low": 0.690596919127086,
+          "high": 0.754813863928113,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.004524886877828055,
+          "low": 0.0,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.04524886877828054,
+          "low": 0.01809954751131222,
+          "high": 0.07692307692307693,
+          "n": 221
+        }
+      }
+    },
+    "hsi": {
+      "all": {
+        "r@5": {
+          "mean": 0.431,
+          "low": 0.401,
+          "high": 0.462,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.607,
+          "low": 0.578,
+          "high": 0.635025,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.55198973042362,
+          "low": 0.5173299101412067,
+          "high": 0.5879332477535302,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.7573812580231065,
+          "low": 0.7278241335044929,
+          "high": 0.7843388960205392,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.004524886877828055,
+          "low": 0.0,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.07692307692307693,
+          "low": 0.04072398190045249,
+          "high": 0.11312217194570136,
+          "n": 221
+        }
+      }
+    }
+  },
+  "paired": {
+    "hsi-vs-bm25": {
+      "2": {
+        "r@5": {
+          "mean": 0.15019255455712452,
+          "low": 0.10394736842105264,
+          "high": 0.1925545571245186,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.26572528883183566,
+          "low": 0.220795892169448,
+          "high": 0.30937098844672656,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": -0.013574660633484163,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.07239819004524888,
+          "low": 0.03619909502262444,
+          "high": 0.1085972850678733,
+          "n": 221
+        }
+      }
+    },
+    "hsi-vs-dense": {
+      "2": {
+        "r@5": {
+          "mean": -0.010269576379974325,
+          "low": -0.04881258023106547,
+          "high": 0.03209242618741977,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.14120667522464697,
+          "low": 0.10141206675224647,
+          "high": 0.1836007702182285,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.004524886877828055,
+          "low": 0.0,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.07692307692307693,
+          "low": 0.04072398190045249,
+          "high": 0.11312217194570136,
+          "n": 221
+        }
+      }
+    },
+    "hsi-vs-expand-vec": {
+      "2": {
+        "r@5": {
+          "mean": 0.02053915275994865,
+          "low": -0.002599486521180999,
+          "high": 0.044929396662387676,
+          "n": 779
+        },
+        "r@10": {
+          "mean": 0.03594351732991014,
+          "low": 0.010269576379974325,
+          "high": 0.06290115532734275,
+          "n": 779
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": -0.013574660633484163,
+          "high": 0.013574660633484163,
+          "n": 221
+        },
+        "r@10": {
+          "mean": 0.03167420814479638,
+          "low": -0.004524886877828055,
+          "high": 0.06787330316742081,
+          "n": 221
+        }
+      }
+    }
+  },
+  "latency_ms": {
+    "bm25": {
+      "p50": 0.7532550002906646,
+      "p95": 1.1835015498036225
+    },
+    "dense": {
+      "p50": 1.4794950002396945,
+      "p95": 2.4677275499470808
+    },
+    "expand-vec": {
+      "p50": 4.324457999700826,
+      "p95": 6.664702499620033
+    },
+    "hsi": {
+      "p50": 20.491122500061465,
+      "p95": 33.62258345000552
+    }
+  },
+  "waterfall_hsi": {
+    "2hop@5": {
+      "link_missed": 0.12066752246469833,
+      "pruned": 0.05263157894736842,
+      "not_stored": 0.0,
+      "not_retrieved": 0.27471116816431324,
+      "ok": 0.55198973042362,
+      "n": 779
+    },
+    "2hop@10": {
+      "link_missed": 0.07573812580231065,
+      "pruned": 0.0410783055198973,
+      "not_stored": 0.0,
+      "not_retrieved": 0.1258023106546855,
+      "ok": 0.7573812580231065,
+      "n": 779
+    },
+    "4hop@5": {
+      "link_missed": 0.4660633484162896,
+      "pruned": 0.5294117647058824,
+      "not_stored": 0.0,
+      "not_retrieved": 0.0,
+      "ok": 0.004524886877828055,
+      "n": 221
+    },
+    "4hop@10": {
+      "link_missed": 0.45248868778280543,
+      "pruned": 0.47058823529411764,
+      "not_stored": 0.0,
+      "not_retrieved": 0.0,
+      "ok": 0.07692307692307693,
+      "n": 221
+    }
+  },
+  "encoder_cache": {
+    "hits": 12708,
+    "misses": 1000
+  },
+  "total_seconds": 61.26730307199978,
+  "gate0_decision": {
+    "status": "fail",
+    "hop_tested": 2,
+    "baseline": "expand-vec",
+    "difference": {
+      "mean": 0.03594351732991014,
+      "low": 0.010269576379974325,
+      "high": 0.06290115532734275,
+      "n": 779
+    },
+    "latency_p50_ms": {
+      "hsi": 20.491122500061465,
+      "expand-vec": 4.324457999700826
+    },
+    "rule": "mean diff >= 0.05 and CI low > 0 and hsi p50 <= 1.5x baseline p50",
+    "provisional": true
+  },
+  "run_id": "ef042dfb-dd69-4bfd-a4df-9d22ea1fc4ff",
+  "corpus_id": "2wiki-n1000-s0-48b9bdc6"
+}

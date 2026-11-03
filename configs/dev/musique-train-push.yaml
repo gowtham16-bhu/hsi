@@ -1,0 +1,44 @@
+# Decision 0012 (pre-registered): learned transitions in local push vs global learned PPR, MuSiQue TRAIN split.
+dataset: musique
+data_file: data/musique/musique_ans_v1.0_train.jsonl
+sample_size: 1000
+seed: 0
+encoder:
+  plugin: onnx
+  options:
+    model: BAAI/bge-small-en-v1.5
+    onnx_file: onnx/model.onnx
+    max_seq_length: 512
+    batch_size: 32
+    query_instruction: "Represent this sentence for searching relevant passages: "   # from the model card
+vector_store: { plugin: faiss, options: {} }
+metadata_store: { plugin: postgres }      # reads HSI_PG_DSN
+cache_dir: .cache/hsi
+out_dir: runs/dev
+graph:
+  fan_out: 32
+  hub_degree_cap: 200
+  bidirectional: true
+  co_mention: true
+  weight_multi_token: 0.9
+  weight_single_token: 0.6
+  reverse_factor: 0.85
+  co_mention_multi_token: 0.7
+  co_mention_single_token: 0.45
+  mention_extractor:
+    plugin: capitalized
+    options: { min_cap_ratio: 0.5, min_join_count: 2, min_join_share: 0.8, max_join_tokens: 2, max_words: 6, min_chars: 3, max_clitic_chars: 2 }
+top_k_hits: 50
+passage_budgets: [5, 10]
+bootstrap: 1000
+chains: { max_passages: 2, beam_level2: 3, beam_level3: 2, budget_ratio: null, key_mode: mean }
+systems:
+  - { name: dense, kind: dense }
+  - { name: global-learned-s3, kind: ppr, options: { seeds: 3, restart: 0.5, iterations: 50, tolerance: 1.0e-6, beta: 0.0, rank_by: total, keep_seeds: 0, transition_model: runs/models/transitions-musique-v2-fan32.json } }
+  - { name: push-learned-s3-e1e-3, kind: push, options: { seeds: 3, restart: 0.5, epsilon: 1.0e-3, beta: 0.0, max_pushes: 100000, transition_model: runs/models/transitions-musique-v2-fan32.json } }
+  - { name: push-learned-s3-e1e-4, kind: push, options: { seeds: 3, restart: 0.5, epsilon: 1.0e-4, beta: 0.0, max_pushes: 100000, transition_model: runs/models/transitions-musique-v2-fan32.json } }
+  - { name: push-learned-s3-e1e-5, kind: push, options: { seeds: 3, restart: 0.5, epsilon: 1.0e-5, beta: 0.0, max_pushes: 100000, transition_model: runs/models/transitions-musique-v2-fan32.json } }
+decision:
+  name: decision-0012
+  all_of:
+    - { candidate: push-learned-s3-e1e-4, baseline: global-learned-s3, slice: all, k: 5, metric: passage_recall, ci_low_at_least: -0.01, max_latency_ratio: 1.0 }

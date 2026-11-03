@@ -1,0 +1,10 @@
+.venv/
+.dev/
+.cache/
+runs/**/*.log
+.import_linter_cache/
+data/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/

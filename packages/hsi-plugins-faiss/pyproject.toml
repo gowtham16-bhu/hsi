@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hsi-plugins-faiss"
+version = "0.1.0"
+description = "HSI vector store plugin: FAISS in-process exact inner-product search"
+requires-python = ">=3.11"
+dependencies = ["hsi-core", "faiss-cpu>=1.8", "numpy>=1.26"]
+
+[project.entry-points."hsi.plugins"]
+"vector_store:faiss" = "hsi_plugins_faiss:FaissStore"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hsi_plugins_faiss"]
