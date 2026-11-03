@@ -61,7 +61,7 @@ Every connector must pass `hsi-connector-kit` before it can be enabled:
 - no write calls (recorded against a strict HTTP proxy);
 - schema validation of all records.
 
-## 3. Three ways to build a connector
+## 3. Ways to build a connector
 
 ### A. Declarative (no code)
 For REST, GraphQL and SQL sources, which covers most tools. One YAML file:
@@ -105,6 +105,39 @@ Many tools already export the same formats, so one adapter covers all of them:
 
 ### C. Code connectors (Python SDK)
 For complex sources: custom authentication, unusual pagination, binary formats, or permission models that need several API calls. They implement the `Connector` protocol directly and must pass the same conformance kit.
+
+### D. MCP connectors (any Model Context Protocol server)
+One generic adapter, `hsi-connector-mcp`, turns any MCP server into a source, local (stdio) or remote (HTTP).
+A company that already exposes Jira, Confluence, GitHub, a database or an in-house tool through MCP needs
+no new connector code. Each instance is configured declaratively:
+
+| MCP feature | Becomes | Config says |
+|---|---|---|
+| `resources/list` + `resources/read` | documents (one per resource URI) | which URI patterns to ingest; title and section fields |
+| a read-only tool with arguments (e.g. "list findings since T") | documents and/or facts | tool name, argument template, how result fields map to documents, entities and facts |
+| `resources/subscribe` notifications | incremental updates (push) | whether to subscribe or poll |
+
+- **Access rules:** MCP has no permission model of its own, so the config must declare where each record's
+  ACL comes from: a field in the returned data, a fixed group, or `public`. Records without one are rejected
+  (rule 2 above).
+- **Incremental sync:** the cursor is the set of (URI, content hash) pairs; changed hashes are re-ingested, and
+  URIs that disappear become tombstones.
+- **Read-only:** the adapter calls only the tools named in its config, and never tools that write.
+- It must pass the same conformance kit as every other connector.
+
+The reverse direction is a product surface, not a connector: HSI itself can be **served as an MCP server**
+(a `retrieve` tool returning passages and their evidence chain), so any agent that speaks MCP can use it.
+
+### E. Public and global data
+Public sources (OSV, NVD, GitHub advisories, vendor advisories, Wikipedia, standards documents, public
+documentation) are ordinary connectors whose records are marked `public`. They enter the same graph as
+private data, so a public CVE page becomes the anchor that links a company's own scanner findings, tickets
+and services.
+
+- **Direction of data:** public data flows *in*; connectors fetch whole feeds or pages on a schedule, never
+  per-question lookups, so no question text or private data is sent out.
+- **Air-gapped sites:** feeds are mirrored to an internal location and ingested from there.
+- **Provenance:** every public record keeps its source URL and fetch time, shown in the evidence chain.
 
 ## 4. Examples (not special cases)
 These show how real tools map to the contract. None of them gets special treatment in the core. Exact API details must be confirmed against each company's own instance and documentation.
