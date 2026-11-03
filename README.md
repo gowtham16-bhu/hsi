@@ -123,6 +123,17 @@ On 4-hop 2Wiki questions, the whole evidence chain is in HSI's top 10 for 85.5% 
 encoder and an LLM-built graph; those figures come from a summary of their paper and are still to be
 checked against the paper's own table.
 
+**Answers** (decision 0017): a small local reader (`Qwen2.5-1.5B-Instruct`) answers the first 200 questions
+of each test set from the top 5 passages. Only the passages differ.
+
+| Dataset | Answer F1, vector search | Answer F1, HSI | Difference (95% CI) |
+|---|---|---|---|
+| 2WikiMultiHopQA | 28.4 | **38.8** | +10.4 [+4.5, +16.7] |
+| MuSiQue | 29.0 | **34.8** | +5.9 [+0.9, +11.0] |
+
+Better passages give better answers. Absolute scores are low because the reader is small; a stronger
+reader would raise both columns.
+
 **Speed** (decision 0012, MuSiQue training split, 1,000 questions, `bge-small`):
 
 | Walk | Recall@5 | Latency (p50) | Work per question |
@@ -346,7 +357,7 @@ name-recognition model; and a scale study that reports where the gain fades. See
 
 - Find why the gain shrinks on large collections (not mainly the encoder; next: competition among neighbours in the walk)
 - Case-independent name finding (lowercase names, identifiers, languages without capital letters)
-- Measure single-document questions and end-to-end answer quality with an LLM reader
+- Measure single-document questions; answer quality with a stronger reader
 - Code plugins: identifiers from syntax trees, one passage per function
 - More connectors (MCP servers, standard export formats); Docker image and a network-blocked test
 - Images, audio and video through transcripts, captions and text extraction

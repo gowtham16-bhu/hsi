@@ -73,3 +73,21 @@ Run `runs/bench/scale-8554c223c1cd44d8.json` (`configs/bench/scale-large.yaml`);
   neighbours as N grows (decision 0014's third cause), and the hop model's features do not separate the
   right neighbour from many similar ones.
 - Absolute result worth keeping: HSI with bge-large reaches 71.0% (10K) and 62.2% (40K).
+
+## Outcome E3 (2026-11-03, cloud CPU): **pass**. Better passages give better answers
+Runs `runs/compare/answers-06d1af04e66ab8f8.json` (2Wiki) and `runs/compare/answers-c4ec1554540f67b6.json`
+(MuSiQue). Reader `Qwen/Qwen2.5-1.5B-Instruct` on CPU, float32, greedy; the first 200 questions of each set;
+top 5 passages from dense and from HSI System A (bge-large). The full 200 questions ran (17 s per question
+without CPU contention), so the amendment's reduced-N option was not needed.
+
+| Dataset | Metric | Dense | HSI | HSI − dense (95% CI) |
+|---|---|---|---|---|
+| 2Wiki | token F1 | 28.4 | 38.8 | **+10.4 [+4.5, +16.7]** |
+| 2Wiki | exact match | 20.0 | 30.0 | +10.0 [+4.0, +16.0] |
+| MuSiQue | token F1 | 29.0 | 34.8 | +5.9 [+0.9, +11.0] |
+| MuSiQue | exact match | 21.0 | 24.5 | +3.5 [−1.0, +8.5] |
+
+- **Pre-registered reading** (2Wiki F1 interval above 0): **met**. MuSiQue's F1 interval is also above 0; its
+  exact-match interval includes 0.
+- Absolute scores are low because the reader is a small 1.5B model on CPU; the comparison is what matters
+  (same reader, same prompt, only the passages differ). A stronger reader would raise both.

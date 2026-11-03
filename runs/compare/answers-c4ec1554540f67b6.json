@@ -1,0 +1,1488 @@
+{
+  "kind": "answer-eval",
+  "config": {
+    "per_question_file": "runs/compare/musique-408756fe336b61c0-per-question.json",
+    "data_file": "data/hipporag2/musique.json",
+    "id_field": "id",
+    "aliases_field": "answer_aliases",
+    "systems": [
+      "dense",
+      "system-A"
+    ],
+    "question_count": 200,
+    "k": 5,
+    "system_prompt": "You answer questions using only the given passages. Reply with the answer only, in a few words.",
+    "user_template": "Passages:\n{passages}\n\nQuestion: {question}\nAnswer:",
+    "passage_template": "{title}: {text}",
+    "reader": {
+      "model": "Qwen/Qwen2.5-1.5B-Instruct",
+      "max_new_tokens": 24,
+      "device": "cpu",
+      "dtype": "float32",
+      "threads": 4
+    },
+    "normalization": {
+      "lowercase": true,
+      "strip_punctuation": true,
+      "remove_words": [
+        "a",
+        "an",
+        "the"
+      ]
+    },
+    "bootstrap": 1000,
+    "seed": 0,
+    "out_dir": "runs/compare"
+  },
+  "config_hash": "c4ec1554540f67b6",
+  "questions": 200,
+  "seconds": 3033.1923687050003,
+  "summary": {
+    "dense": {
+      "em": {
+        "mean": 0.21,
+        "low": 0.155,
+        "high": 0.27,
+        "n": 200
+      },
+      "f1": {
+        "mean": 0.28964720375818775,
+        "low": 0.23447393483709267,
+        "high": 0.3477048791967842,
+        "n": 200
+      }
+    },
+    "system-A": {
+      "em": {
+        "mean": 0.245,
+        "low": 0.19,
+        "high": 0.305,
+        "n": 200
+      },
+      "f1": {
+        "mean": 0.3482070413246883,
+        "low": 0.29064516292531,
+        "high": 0.40845367549117545,
+        "n": 200
+      }
+    }
+  },
+  "difference": {
+    "candidate": "system-A",
+    "baseline": "dense",
+    "em": {
+      "mean": 0.035,
+      "low": -0.01,
+      "high": 0.085,
+      "n": 200
+    },
+    "f1": {
+      "mean": 0.05855983756650065,
+      "low": 0.008807681610540338,
+      "high": 0.1096756532015618,
+      "n": 200
+    }
+  },
+  "answers": [
+    {
+      "id": "2hop__10017_18974",
+      "question": "Who led the military expedition in the province that borders Zhejiang to the south?",
+      "gold": "Chen Zheng",
+      "dense": "Sun Ce",
+      "system-A": "Liu Bang"
+    },
+    {
+      "id": "2hop__10515_21567",
+      "question": "Who introduced a system of musical notation in the 14th century that is used in the area where most of the invasion of the eastern Roman Empire took place?",
+      "gold": "John Kukuzelis",
+      "dense": "John Kukuzelis",
+      "system-A": "John Kukuzelis"
+    },
+    {
+      "id": "2hop__10620_49084",
+      "question": "Who plays the legendary figure featured in Historia Regum Britanniae in the show Once Upon a Time?",
+      "gold": "Liam Thomas Garrigan",
+      "dense": "Helena G. Wells",
+      "system-A": "Jaime Murray"
+    },
+    {
+      "id": "2hop__10620_79092",
+      "question": "The volcano, named after the legendary King featured in Historia Regum Britanniae, last erupted when?",
+      "gold": "lava samples have been dated at 341 to 335 million years old",
+      "dense": "1136",
+      "system-A": "832 AD"
+    },
+    {
+      "id": "2hop__107185_64006",
+      "question": "As a result of the black death it is estimated that the population of the country for B\u00e2ton \u00e0 feu was reduced by how much?",
+      "gold": "30% to 65%",
+      "dense": "40%",
+      "system-A": "40%"
+    },
+    {
+      "id": "2hop__107238_64918",
+      "question": "Who was president when congress declared war on the country where Glumpers was filmed?",
+      "gold": "President McKinley",
+      "dense": "Barack Obama",
+      "system-A": "James K. Polk"
+    },
+    {
+      "id": "2hop__107548_124896",
+      "question": "Who is the father of the artist who painted Head I?",
+      "gold": "Nicholas Bacon",
+      "dense": "Francis Bacon",
+      "system-A": "Sir Nicholas Bacon"
+    },
+    {
+      "id": "2hop__107601_110222",
+      "question": "When is the birthday of the creator of Le ruisseau noir?",
+      "gold": "10 June 1819",
+      "dense": "1865",
+      "system-A": "June 10, 1819"
+    },
+    {
+      "id": "2hop__107690_124896",
+      "question": "Who was the father of The Portrait of George Dyer Talking's creator?",
+      "gold": "Nicholas Bacon",
+      "dense": "George Dyer",
+      "system-A": "George Dyer"
+    },
+    {
+      "id": "2hop__107905_110222",
+      "question": "When is the date of birth of the creator of A Burial at Ornans?",
+      "gold": "10 June 1819",
+      "dense": "September 1848",
+      "system-A": "6 June 1819"
+    },
+    {
+      "id": "2hop__108158_83769",
+      "question": "Who was played by the creator of Push, Nevada in Dazed and Confused?",
+      "gold": "Fred O'Bannion",
+      "dense": "Ben Affleck",
+      "system-A": "Sean Bailey"
+    },
+    {
+      "id": "2hop__119423_779396",
+      "question": "Where was the designer of the Lap Engine educated?",
+      "gold": "University of Glasgow",
+      "dense": "Bowdoin College",
+      "system-A": "University of Glasgow"
+    },
+    {
+      "id": "2hop__12039_11957",
+      "question": "What geological event caused the foundations of the land beneath the city where most university graduates stay after acquiring a degree?",
+      "gold": "erosion of the Rocky Mountains",
+      "dense": "The 1906 San Francisco earthquake caused the foundations of the land beneath the city where most university graduates stay after",
+      "system-A": "Erosion of the Rocky Mountains followed by deposition of silt."
+    },
+    {
+      "id": "2hop__121145_561444",
+      "question": "Who did the creator of Derech Mitzvosecha follow?",
+      "gold": "Dovber Schneuri",
+      "dense": "Rabbi Menachem Mendel Schneersohn",
+      "system-A": "Rabbi Menachem Mendel Schneersohn"
+    },
+    {
+      "id": "2hop__121386_37168",
+      "question": "According to QS World University Rankings, where does the college that Ibrahim Shihata attended rank?",
+      "gold": "551-600",
+      "dense": "Cairo University",
+      "system-A": "Cairo University"
+    },
+    {
+      "id": "2hop__123145_66723",
+      "question": "who was the first black student admitted to the university that Stewart Patridge attended?",
+      "gold": "James Howard Meredith",
+      "dense": "James Meredith",
+      "system-A": "James Meredith"
+    },
+    {
+      "id": "2hop__123145_80420",
+      "question": "Who was the first African American student to attend Stewart Patridge's university?",
+      "gold": "James Howard Meredith",
+      "dense": "James Meredith",
+      "system-A": "James Meredith"
+    },
+    {
+      "id": "2hop__123148_5385",
+      "question": "How many people work in Susan Winchester's alma mater?",
+      "gold": "11,900",
+      "dense": "10,000",
+      "system-A": "10,000"
+    },
+    {
+      "id": "2hop__123214_22402",
+      "question": "How many students attend Daniel Th\u00fcrer's university?",
+      "gold": "nearly 25,000",
+      "dense": "25,000",
+      "system-A": "25,000"
+    },
+    {
+      "id": "2hop__123509_5385",
+      "question": "How many people work in the university that is related with Mark F. Green?",
+      "gold": "11,900",
+      "dense": "123",
+      "system-A": "Assistant US Attorney"
+    },
+    {
+      "id": "2hop__123545_47134",
+      "question": "Who is the mascot of the university related to Randy Conrads?",
+      "gold": "Benny Beaver",
+      "dense": "Classmates Online, Inc.",
+      "system-A": "Classmates Online, Inc."
+    },
+    {
+      "id": "2hop__124412_402641",
+      "question": "Who is the child of Chiang Hsiao-wen's father?",
+      "gold": "Chiang Hsiao-wu",
+      "dense": "Chiang Ching-kuo",
+      "system-A": "Chiang Hsiao-chang"
+    },
+    {
+      "id": "2hop__124592_402641",
+      "question": "Who is the other child of Chian Hsiao-chang's father?",
+      "gold": "Chiang Hsiao-wu",
+      "dense": "Hsiao-wen",
+      "system-A": "Chiang Hsiao-wen"
+    },
+    {
+      "id": "2hop__124807_135019",
+      "question": "Who is the mother of Nephalion's father?",
+      "gold": "Europa",
+      "dense": "Minos",
+      "system-A": "Europa"
+    },
+    {
+      "id": "2hop__124933_653666",
+      "question": "Who is the mother of the father of Julia Murdock Smith?",
+      "gold": "Lucy Mack Smith",
+      "dense": "Emma Hale Smith",
+      "system-A": "Emma Hale Smith"
+    },
+    {
+      "id": "2hop__126306_396277",
+      "question": "What is another notable work by the illustrator of Sylvester and the Magic Pebble?",
+      "gold": "Doctor De Soto",
+      "dense": "Tommy Trouble and the Magic Marble",
+      "system-A": "Tommy Trouble and the Magic Marble"
+    },
+    {
+      "id": "2hop__128342_375952",
+      "question": "In which county is the city of KABG located?",
+      "gold": "Santa Barbara County",
+      "dense": "Los Alamos County",
+      "system-A": "Santa Fe"
+    },
+    {
+      "id": "2hop__128608_82341",
+      "question": "The city where WOCA is located is in which part of Florida?",
+      "gold": "in Northern Florida",
+      "dense": "Northern Florida",
+      "system-A": "Northern Florida"
+    },
+    {
+      "id": "2hop__128945_47686",
+      "question": "From where do buses leave the city CKIS-FM serves?",
+      "gold": "Toronto Coach Terminal",
+      "dense": "Toronto Coach Terminal",
+      "system-A": "Grand Island, New York"
+    },
+    {
+      "id": "2hop__130404_59180",
+      "question": "What date saw the writing of the song where the devil went down to the state where WDXQ is located?",
+      "gold": "May 21, 1979",
+      "dense": "December 11, 1816",
+      "system-A": "May 21, 1979"
+    },
+    {
+      "id": "2hop__130508_32379",
+      "question": "What is the oldest college in the state that contains Borough House Plantation?",
+      "gold": "College of Charles Towne",
+      "dense": "Not applicable",
+      "system-A": "None"
+    },
+    {
+      "id": "2hop__130867_54221",
+      "question": "What time of day can you start purchasing alcohol in the state that includes Narraguagus High School?",
+      "gold": "5am",
+      "dense": "5am",
+      "system-A": "5am"
+    },
+    {
+      "id": "2hop__131275_72870",
+      "question": "Who did the state where Christian Science Pleasant View Home was located vote for in 2016?",
+      "gold": "Hillary Clinton",
+      "dense": "Hillary Clinton",
+      "system-A": "Hillary Clinton"
+    },
+    {
+      "id": "2hop__131455_11960",
+      "question": "What is the tallest building in the state where KZAR is located?",
+      "gold": "JPMorgan Chase Tower",
+      "dense": "San Antonio, Texas",
+      "system-A": "McQueeney, Texas"
+    },
+    {
+      "id": "2hop__131818_161450",
+      "question": "Where is the Voshmgir District located?",
+      "gold": "in the north-east of the country south of the Caspian Sea",
+      "dense": "In Aqqala County, Golestan Province, Iran.",
+      "system-A": "In Aqqala County, Golestan Province, Iran."
+    },
+    {
+      "id": "2hop__132469_533882",
+      "question": "Which company followed the company that made AAM-N-4 Oriole?",
+      "gold": "Martin Marietta",
+      "dense": "Northrop Corporation",
+      "system-A": "Northrop Corporation"
+    },
+    {
+      "id": "2hop__132909_33564",
+      "question": "During which era was the company that makes Nirbhay founded?",
+      "gold": "From the 1950s to the 1970s",
+      "dense": "20th century",
+      "system-A": "The company that makes Nirbhay, Hale & Kilburn, was founded during the 19th century."
+    },
+    {
+      "id": "2hop__132929_120537",
+      "question": "When was the company that makes Skyflash abolished?",
+      "gold": "30 November 1999",
+      "dense": "1999",
+      "system-A": "1999"
+    },
+    {
+      "id": "2hop__132954_533882",
+      "question": "What company was formed after a merger of the company that built ASM-N-5 Gorgon V?",
+      "gold": "Martin Marietta",
+      "dense": "Northrop Grumman",
+      "system-A": "Martin Marietta"
+    },
+    {
+      "id": "2hop__13548_13529",
+      "question": "When was the person who Messi's goals in Copa del Rey compared to get signed by Barcelona?",
+      "gold": "June 1982",
+      "dense": "June 1982",
+      "system-A": "2002"
+    },
+    {
+      "id": "2hop__135651_669373",
+      "question": "Which university employed the person that Mach bands are named after?",
+      "gold": "Charles University",
+      "dense": "Charles University",
+      "system-A": "Charles University"
+    },
+    {
+      "id": "2hop__135652_669373",
+      "question": "Who is the employer of the physicist who Mach number is named after?",
+      "gold": "Charles University",
+      "dense": "Ernst Mach",
+      "system-A": "Ernst Mach"
+    },
+    {
+      "id": "2hop__135822_46621",
+      "question": "When was the star to which Solgr\u00e4nd is named after discovered to be the center of the solar system?",
+      "gold": "as early as the 3rd century BC",
+      "dense": "Aristarchus of Samos proposed heliocentrism in the 3rd century BC.",
+      "system-A": "Aristarchus of Samos proposed heliocentrism in the 3rd century BC."
+    },
+    {
+      "id": "2hop__13592_85544",
+      "question": "How many games do team in the league where Barcelona won titles in 1948 and 1949 play?",
+      "gold": "38",
+      "dense": "60,000",
+      "system-A": "60,000"
+    },
+    {
+      "id": "2hop__135963_486257",
+      "question": "The scientist that the GHZ experiment is named for is in what field of work?",
+      "gold": "physic",
+      "dense": "Quantum physics",
+      "system-A": "Quantum physics"
+    },
+    {
+      "id": "2hop__136067_160249",
+      "question": "Between which years did war with the person for whom Pyrrhic victory is named occur?",
+      "gold": "323\u2013272 BC",
+      "dense": "280 BC - 272 BC",
+      "system-A": "280 BC - 272 BC"
+    },
+    {
+      "id": "2hop__136214_483189",
+      "question": "The person whom Sikyona is named after is part of what?",
+      "gold": "Greek mythology",
+      "dense": "ancient city Sicyon",
+      "system-A": "ancient city Sicyon"
+    },
+    {
+      "id": "2hop__137061_45752",
+      "question": "Why does the place where Step Up Revolution takes place have a duck for a mascot?",
+      "gold": "when the school's yearbook chose its name to be ``The Ibis",
+      "dense": "Because it's a professional basketball team called the Beijing Shougang Ducks.",
+      "system-A": "Because the Shougang Corporation sponsors the team."
+    },
+    {
+      "id": "2hop__13731_801817",
+      "question": "Where was Mary's betrothed born?",
+      "gold": "Nazareth",
+      "dense": "Nazareth",
+      "system-A": "Nazareth"
+    },
+    {
+      "id": "2hop__141456_6455",
+      "question": "What was the resulting browser for the company Mozilla Messaging is a part of?",
+      "gold": "Firefox",
+      "dense": "Firefox",
+      "system-A": "Mozilla Thunderbird"
+    },
+    {
+      "id": "2hop__142699_67465",
+      "question": "When did the rapper on On and On and Beyond release Best day Ever?",
+      "gold": "March 11, 2011",
+      "dense": "March 11, 2011",
+      "system-A": "March 11, 2011"
+    },
+    {
+      "id": "2hop__142881_127399",
+      "question": "When was the performer of the album From Them, Through Us, to You formed?",
+      "gold": "2005",
+      "dense": "2005",
+      "system-A": "2005"
+    },
+    {
+      "id": "2hop__143650_152023",
+      "question": "What label was responsible for who sang or played Delta Hardware?",
+      "gold": "Kicking Mule Records",
+      "dense": "Real World Records",
+      "system-A": "Real World Records"
+    },
+    {
+      "id": "2hop__143915_68489",
+      "question": "who did the performer of Sings America play on young and restless?",
+      "gold": "Snapper Foster",
+      "dense": "Bryton James",
+      "system-A": "David Hasselhoff"
+    },
+    {
+      "id": "2hop__144303_483189",
+      "question": "What mythology is the city where Eutychides was born in a part of?",
+      "gold": "Greek mythology",
+      "dense": "Greek mythology",
+      "system-A": "Greek mythology"
+    },
+    {
+      "id": "2hop__144317_120065",
+      "question": "What year did the city were Hans-Joachim Merker was born end?",
+      "gold": "1738",
+      "dense": "1929",
+      "system-A": "1929"
+    },
+    {
+      "id": "2hop__145082_35034",
+      "question": "What was the population density of Tammy Leitner's city of birth in 2009?",
+      "gold": "3,771.9 people per square mile (1,456.4/km2)",
+      "dense": "Not specified in the passage.",
+      "system-A": "3,771.9 people per square mile (1,456.4/km\u00b2)"
+    },
+    {
+      "id": "2hop__147212_60904",
+      "question": "Who owns the rehabilitation center at the place where Hank Moonjean died?",
+      "gold": "Jack Michel",
+      "dense": "Jack Michel",
+      "system-A": "Jack Michel"
+    },
+    {
+      "id": "2hop__147260_623159",
+      "question": "What territorial entity does the town where John the Hairy lived belong to?",
+      "gold": "Yaroslavl Oblast",
+      "dense": "Russian Orthodox Church",
+      "system-A": "Russia"
+    },
+    {
+      "id": "2hop__149862_108549",
+      "question": "Who created the work that features the appearance of Cosmic Boy?",
+      "gold": "Alfred Gough",
+      "dense": "Ryan Kennedy",
+      "system-A": "Jerry Siegel and Joe Shuster"
+    },
+    {
+      "id": "2hop__149983_108549",
+      "question": "Who wrote the fictional work Doctor Fate exists in?",
+      "gold": "Alfred Gough",
+      "dense": "Brent Stait, Erica Carroll, Jacqueline Rayner, Nick Walters, Chris Boucher, Lawrence Miles",
+      "system-A": "Nick Walters"
+    },
+    {
+      "id": "2hop__14_59409",
+      "question": "Who was Beyonce's husband talking about in the the song Cry?",
+      "gold": "three different relationships he had in the past",
+      "dense": "Jay-Z",
+      "system-A": "Jay-Z"
+    },
+    {
+      "id": "2hop__151750_141308",
+      "question": "What company is the record label of Magic Christian Music part of?",
+      "gold": "Apple Corps",
+      "dense": "SME",
+      "system-A": "Apple Records"
+    },
+    {
+      "id": "2hop__152027_141308",
+      "question": "What is the parent company of the record label releasing Cold Turkey?",
+      "gold": "Apple Corps",
+      "dense": "Apple Music",
+      "system-A": "SME (Sony Music Entertainment)"
+    },
+    {
+      "id": "2hop__152052_141308",
+      "question": "What company is the label responsible for Don't Let Me Wait Too Long a part of?",
+      "gold": "Apple Corps",
+      "dense": "Universal Music Group",
+      "system-A": "Universal Music Group"
+    },
+    {
+      "id": "2hop__153573_109006",
+      "question": "Who developed the eponymous character from the series that contains Mickey's Safari in Letterland?",
+      "gold": "Walt Disney",
+      "dense": "Walt Disney and Ub Iwerks",
+      "system-A": "Floyd Gottfredson"
+    },
+    {
+      "id": "2hop__153573_44085",
+      "question": "What was the show named after the character featured in the video game Mickey's Safari in Letterland?",
+      "gold": "The Mickey Mouse Club",
+      "dense": "Mickey's Safari in Letterland",
+      "system-A": "Letterland"
+    },
+    {
+      "id": "2hop__153573_45901",
+      "question": "Who did the original voice for the character whose series Mickey's safari in Letterland is from?",
+      "gold": "Walt Disney",
+      "dense": "Walt Disney",
+      "system-A": "Walt Disney"
+    },
+    {
+      "id": "2hop__15416_58040",
+      "question": "What is the highest city in the state where Dell ranks sixth by revenue?",
+      "gold": "Fort Davis",
+      "dense": "Texas",
+      "system-A": "Texas"
+    },
+    {
+      "id": "2hop__155781_155922",
+      "question": "What does the river that Darling Mills Creek turns into flow into?",
+      "gold": "Sydney Harbour",
+      "dense": "Sydney Harbour",
+      "system-A": "Sydney Harbour"
+    },
+    {
+      "id": "2hop__156085_436709",
+      "question": "Who is the creator of Mickey Mouse's spouse?",
+      "gold": "Walt Disney",
+      "dense": "Walt Disney",
+      "system-A": "Minnie Mouse"
+    },
+    {
+      "id": "2hop__15650_77173",
+      "question": "Where are the Ozark Mountains located within the state where Robert Patton worked in May 2014?",
+      "gold": "northeastern Oklahoma",
+      "dense": "Arkansas",
+      "system-A": "Arkansas"
+    },
+    {
+      "id": "2hop__156700_73244",
+      "question": "Where is the origin of the river that Kraai River is a tributary of?",
+      "gold": "Thaba Putsoa",
+      "dense": "Bell River",
+      "system-A": "The Kraai River is a tributary of the Orange River."
+    },
+    {
+      "id": "2hop__157251_556157",
+      "question": "What river does the system containing Umchabezi River serve as the mouth of?",
+      "gold": "Limpopo River",
+      "dense": "Limpopo River",
+      "system-A": "Limpopo River"
+    },
+    {
+      "id": "2hop__157376_643670",
+      "question": "Of which watercourse is the river the Willemsbrug crosses over the mouth?",
+      "gold": "Het Scheur",
+      "dense": "Nieuwe Maas",
+      "system-A": "Nieuwe Maas"
+    },
+    {
+      "id": "2hop__157498_127908",
+      "question": "What league does the team that uses Dick's Sporting Goods Park play for?",
+      "gold": "Major League Soccer",
+      "dense": "MLS",
+      "system-A": "MLS"
+    },
+    {
+      "id": "2hop__157602_21567",
+      "question": "In the 14th century, who introduced a system of musical notation used in the area where 3% of Turkey is located?",
+      "gold": "John Kukuzelis",
+      "dense": "John Kukuzelis",
+      "system-A": "John Kukuzelis"
+    },
+    {
+      "id": "2hop__158010_58067",
+      "question": "Who was honoured with the highest award a citizen without military experience in India before becoming a president?",
+      "gold": "A.P.J. Abdul Kalam",
+      "dense": "A.P.J. Abdul Kalam",
+      "system-A": "A.P.J. Abdul Kalam"
+    },
+    {
+      "id": "2hop__158275_35739",
+      "question": "When was one internet browser's version of Windows 8 made accessible?",
+      "gold": "September 2013",
+      "dense": "September 2013",
+      "system-A": "Firefox's version of Windows 8 was made accessible in September 2013."
+    },
+    {
+      "id": "2hop__159215_779396",
+      "question": "Where was the person who wrote about the rioting being a dividing factor in Birmingham educated?",
+      "gold": "University of Glasgow",
+      "dense": "King Edward's School, Birmingham",
+      "system-A": "King Edward's School, Birmingham"
+    },
+    {
+      "id": "2hop__159737_27110",
+      "question": "During what time span were there findings of habitation in India and the country that withdrew its forces in accordance with the UN resolution of August 1948?",
+      "gold": "7000\u20139000 BCE",
+      "dense": "1947-1948",
+      "system-A": "1947-1948"
+    },
+    {
+      "id": "2hop__159741_161674",
+      "question": "What month did the person who retained trust in Longchamp go away to the Holy Land?",
+      "gold": "October",
+      "dense": "September",
+      "system-A": "September 1189"
+    },
+    {
+      "id": "2hop__159816_37168",
+      "question": "According to QS World University Rankings where does the university where Hawass graduated rank?",
+      "gold": "551-600",
+      "dense": "5th",
+      "system-A": "551-600"
+    },
+    {
+      "id": "2hop__161151_42429",
+      "question": "When did the French and Indian War in the continent where bison antiquus is found end?",
+      "gold": "10 February 1763",
+      "dense": "The French and Indian War ended in 1763.",
+      "system-A": "The French and Indian War ended in 1763."
+    },
+    {
+      "id": "2hop__161507_77849",
+      "question": "Who is the newly elected Chief Justice of the country where Masherbrum is located?",
+      "gold": "Mian Saqib Nisar",
+      "dense": "Pakistan",
+      "system-A": "Sophia Akuffo"
+    },
+    {
+      "id": "2hop__161872_21567",
+      "question": "Who in the14th century introduced musical notation used where Jack later participated in a covert mission?",
+      "gold": "John Kukuzelis",
+      "dense": "Pythagoras",
+      "system-A": "Burgh (2006)"
+    },
+    {
+      "id": "2hop__161915_78851",
+      "question": "which professional sports team would you not see play a home game in the arena where the last place Cream performed?",
+      "gold": "Brooklyn Nets NBA",
+      "dense": "Los Angeles Lakers",
+      "system-A": "Vegas Golden Knights"
+    },
+    {
+      "id": "2hop__16581_16525",
+      "question": "When did the person who first brought a postal service into Umayyad lands become caliph?",
+      "gold": "661",
+      "dense": "Mu'awiyah",
+      "system-A": "Mu'awiyah"
+    },
+    {
+      "id": "2hop__16581_16569",
+      "question": "What tribe did the wife of the person who first brought postal service to Umayyad lands belong to?",
+      "gold": "Kalb",
+      "dense": "Jacobite",
+      "system-A": "Hind"
+    },
+    {
+      "id": "2hop__1667_40502",
+      "question": "What was the population of the founder of New Amsterdam before influx of Huguenot refugees?",
+      "gold": "2 million",
+      "dense": "2 million",
+      "system-A": "2 million"
+    },
+    {
+      "id": "2hop__166820_52835",
+      "question": "Who wrote turn me on, which was performed by the person who also performed Chasing Pirates?",
+      "gold": "John D. Loudermilk",
+      "dense": "Norah Jones",
+      "system-A": "Norah Jones"
+    },
+    {
+      "id": "2hop__166824_185403",
+      "question": "What league does the team that plays in Stadio Ciro Vigorito play for?",
+      "gold": "Lega Pro Prima Divisione",
+      "dense": "Serie A",
+      "system-A": "Serie A"
+    },
+    {
+      "id": "2hop__167577_31122",
+      "question": "What century did the author of A Treatise Concerning the Principles of Human Knowledge live in?",
+      "gold": "18th",
+      "dense": "18th century",
+      "system-A": "18th century"
+    },
+    {
+      "id": "2hop__16844_20510",
+      "question": "When was the entity that was dissolved after the Indian Rebellion in 1857 chartered?",
+      "gold": "1600",
+      "dense": "The East India Company",
+      "system-A": "The East India Company"
+    },
+    {
+      "id": "2hop__168816_144857",
+      "question": "In what city was the author of Elephant born?",
+      "gold": "Clatskanie",
+      "dense": "Allahabad",
+      "system-A": "Columbia"
+    },
+    {
+      "id": "2hop__169443_83769",
+      "question": "Who did the screenwriter for Good Will Hunting play in Dazed and Confused?",
+      "gold": "Fred O'Bannion",
+      "dense": "Matthew McConaughey",
+      "system-A": "Robin Williams"
+    },
+    {
+      "id": "2hop__170823_120171",
+      "question": "What year did the publisher of Labyrinth end?",
+      "gold": "1986",
+      "dense": "1984",
+      "system-A": "1986"
+    },
+    {
+      "id": "2hop__170914_152093",
+      "question": "What label is responsible for the performer of \"Friend Like That\"?",
+      "gold": "Fair Trade Services",
+      "dense": "Hawk Nelson Is My Friend",
+      "system-A": "Apple Records"
+    },
+    {
+      "id": "2hop__17455_21567",
+      "question": "Who introduced a system of musical notation used in the region the Romans aimed to re-bolster influence in after the Second Punic war in the 14th century?",
+      "gold": "John Kukuzelis",
+      "dense": "John Kukuzelis",
+      "system-A": "John Kukuzelis"
+    },
+    {
+      "id": "2hop__17854_17873",
+      "question": "What happened to Buckingham Palace after the first monarch to reside there left?",
+      "gold": "palace was seldom used, even neglected",
+      "dense": "Queen Victoria moved out in 1837.",
+      "system-A": "The palace was abandoned and rarely used until the reign of Queen Victoria."
+    },
+    {
+      "id": "2hop__179322_83289",
+      "question": "Who stars in the video \"One Last Time\" by the performer of Baby I?",
+      "gold": "Matt Bennett",
+      "dense": "Matt Bennett",
+      "system-A": "Matt Bennett"
+    },
+    {
+      "id": "2hop__194469_83289",
+      "question": "Who is the guy in the One Last Time video by the participant in The Listening Sessions?",
+      "gold": "Matt Bennett",
+      "dense": "Matt Bennett",
+      "system-A": "Matt Bennett"
+    },
+    {
+      "id": "2hop__194532_57594",
+      "question": "What gun does the director of Pollock use in Westworld?",
+      "gold": "LeMat revolver",
+      "dense": "Thompson submachine gun",
+      "system-A": "The director of Pollock uses the Thompson submachine gun in Westworld."
+    },
+    {
+      "id": "2hop__199513_801817",
+      "question": "What is the birthplace of the person after whom S\u00e3o Jos\u00e9 dos Campos was named?",
+      "gold": "Nazareth",
+      "dense": "Saint Joseph of the Fields",
+      "system-A": "Saint Joseph of the Fields"
+    },
+    {
+      "id": "2hop__20256_74481",
+      "question": "The Freddie Mercury film's producer played who in Godfather 2?",
+      "gold": "Vito Corleone",
+      "dense": "Robert De Niro",
+      "system-A": "Al Pacino"
+    },
+    {
+      "id": "2hop__20268_42014",
+      "question": "How many members in the seats of the organization that enacted the Directory of Public Worship into law are members of the Scottish Government?",
+      "gold": "2",
+      "dense": "129",
+      "system-A": "129"
+    },
+    {
+      "id": "2hop__203437_152093",
+      "question": "What label was responsible for the performer of Live Life Loud?",
+      "gold": "Fair Trade Services",
+      "dense": "Hawk Nelson",
+      "system-A": "Fair Trade Services"
+    },
+    {
+      "id": "2hop__204146_850295",
+      "question": "Who is the sibling of the author of Kapalkundala?",
+      "gold": "Sanjib Chandra",
+      "dense": "Thayil Thomas Jacob",
+      "system-A": "Bankim Chandra Chattopadhyay"
+    },
+    {
+      "id": "2hop__20536_96912",
+      "question": "Who gives out the award named after the person who argued that colonies were redundant?",
+      "gold": "University of Cambridge",
+      "dense": "Adam Smith",
+      "system-A": "Adam Smith"
+    },
+    {
+      "id": "2hop__20685_712629",
+      "question": "Who was the spouse of the British queen?",
+      "gold": "Philip Mountbatten",
+      "dense": "Viscount Lascelles",
+      "system-A": "Viscount Lascelles"
+    },
+    {
+      "id": "2hop__207476_625987",
+      "question": "Who is the grandmother of Philippe, Duke of Orl\u00e9ans?",
+      "gold": "Marie de' Medici",
+      "dense": "Anne of Austria",
+      "system-A": "Anne of Austria"
+    },
+    {
+      "id": "2hop__207597_73244",
+      "question": "Where is the origin of the Caledon River?",
+      "gold": "Thaba Putsoa",
+      "dense": "Maloti Mountains (Drakensberg), Lesotho",
+      "system-A": "The Caledon River originates in the mountains south of Lesotho."
+    },
+    {
+      "id": "2hop__21075_5028",
+      "question": "What was the average per capita GVA in 2013 of the country which created Burma's academic system?",
+      "gold": "\u00a323,755",
+      "dense": "Not specified",
+      "system-A": "Not applicable"
+    },
+    {
+      "id": "2hop__21103_16254",
+      "question": "By 1931, what percentage of the world's Jews were the group of Jews that represented the bulk of modern Jewry?",
+      "gold": "92 percent",
+      "dense": "92%",
+      "system-A": "92%"
+    },
+    {
+      "id": "2hop__21104_16334",
+      "question": "The 2010 study found that what modern population is most closely related to the group that represents at least 70% of Jews worldwide?",
+      "gold": "modern-day Italians",
+      "dense": "Ashkenazi Jews",
+      "system-A": "Ashkenazi Jews"
+    },
+    {
+      "id": "2hop__215896_460425",
+      "question": "What is the location of formation of the film company distributing The Boss?",
+      "gold": "Fort Lee",
+      "dense": "Fort Lee, New Jersey",
+      "system-A": "Fort Lee, New Jersey"
+    },
+    {
+      "id": "2hop__215898_67465",
+      "question": "When did the performer of I Love Life, Thank You release Best Day Ever?",
+      "gold": "March 11, 2011",
+      "dense": "March 11, 2011",
+      "system-A": "October 14, 2011"
+    },
+    {
+      "id": "2hop__219456_87295",
+      "question": "What character in Princess Diaries does the actress play who was also a cast member in On Golden Pond?",
+      "gold": "Queen dowager Clarisse Renaldi",
+      "dense": "Mia Thermopolis",
+      "system-A": "Mia Thermopolis"
+    },
+    {
+      "id": "2hop__223655_463572",
+      "question": "What record label released the debut album of the artist behind the 1993 album \"Let There be Love\".",
+      "gold": "MGM Records",
+      "dense": "Jasmine Records",
+      "system-A": "Jasmine Records"
+    },
+    {
+      "id": "2hop__223823_29905",
+      "question": "How many mandatory transmitters of the Canadian Broadcasting Centre's owner were updated before the deadline?",
+      "gold": "only about half",
+      "dense": "15",
+      "system-A": "15"
+    },
+    {
+      "id": "2hop__226204_69048",
+      "question": "Who is the chief judge of Friday Osanebi's birthplace?",
+      "gold": "Honorable Justice Abiodun Smith",
+      "dense": "Adama Lamikanra",
+      "system-A": "Adama Lamikanra"
+    },
+    {
+      "id": "2hop__227031_144857",
+      "question": "What is the name of the city where Tess Gallagher's spouse was born in?",
+      "gold": "Clatskanie",
+      "dense": "Tess Gallagher's spouse was born in Cudahy, California.",
+      "system-A": "New York"
+    },
+    {
+      "id": "2hop__227791_75487",
+      "question": "Who is the federal leader of the political party Ken Epp belongs to?",
+      "gold": "Andrew Scheer",
+      "dense": "Theresa May",
+      "system-A": "Theresa May"
+    },
+    {
+      "id": "2hop__23459_35123",
+      "question": "What was the lifespan of the most influential figure in Islamic philosophy?",
+      "gold": "980\u20131037",
+      "dense": "980-1037",
+      "system-A": "980-1037"
+    },
+    {
+      "id": "2hop__23459_35124",
+      "question": "How many books were said to be written by the most influential in Islamic philosophy?",
+      "gold": "450",
+      "dense": "450",
+      "system-A": "450"
+    },
+    {
+      "id": "2hop__235471_565925",
+      "question": "What record label did the performer of The Place and the Time belong to?",
+      "gold": "Columbia Records",
+      "dense": "Sundazed Records",
+      "system-A": "Sundazed Records"
+    },
+    {
+      "id": "2hop__238499_431914",
+      "question": "What administrative territorial entity includes the arrondissement that contains the Digne Cathedral?",
+      "gold": "Alpes-de-Haute-Provence",
+      "dense": "France",
+      "system-A": "Rh\u00f4ne-Alpes"
+    },
+    {
+      "id": "2hop__242938_18803",
+      "question": "What did M. King Hubbert's employer announce it was in the process of doing in April 2010?",
+      "gold": "trying to find a potential buyer for all of its operations in Finland",
+      "dense": "Announced a deal to acquire Marvel Comics' parent corporation.",
+      "system-A": "Making several important contributions to geology, geophysics, and petroleum geology."
+    },
+    {
+      "id": "2hop__24441_36630",
+      "question": "What countries found their economic growth in the period young boys were employed in the glass making industries?",
+      "gold": "United Kingdom and Prussia",
+      "dense": "England, Scotland, and parts of Ireland.",
+      "system-A": "India, Pakistan, Indonesia, Thailand, Philippines"
+    },
+    {
+      "id": "2hop__245835_762148",
+      "question": "Who is part of the group performing Ask the Fish?",
+      "gold": "Vince Herman",
+      "dense": "Leftover Salmon",
+      "system-A": "Leftover Salmon"
+    },
+    {
+      "id": "2hop__24648_192417",
+      "question": "What is the league of the Carolina Panthers an example of?",
+      "gold": "sports league",
+      "dense": "American Football League",
+      "system-A": "National Football League (NFL)"
+    },
+    {
+      "id": "2hop__24661_81961",
+      "question": "When does the regular season begin for the league the Carolina Hurricanes belong to?",
+      "gold": "October 4, 2017",
+      "dense": "October 3, 2018",
+      "system-A": "October 3, 2018"
+    },
+    {
+      "id": "2hop__24976_161105",
+      "question": "By how many votes did the person the organizers wanted to arrest survive impeachment?",
+      "gold": "72",
+      "dense": "72",
+      "system-A": "72"
+    },
+    {
+      "id": "2hop__24976_25002",
+      "question": "how long lasting was the pact between Kravchuk and the person organizers wanted to arrest?",
+      "gold": "10-year",
+      "dense": "two years",
+      "system-A": "two years"
+    },
+    {
+      "id": "2hop__249867_557232",
+      "question": "Which country is the Desert Forest Golf Club located in?",
+      "gold": "Maricopa County",
+      "dense": "Arizona",
+      "system-A": "Arizona"
+    },
+    {
+      "id": "2hop__252311_366220",
+      "question": "Who founded the company that distributed the film UHF?",
+      "gold": "Mike Medavoy",
+      "dense": "Orion Pictures",
+      "system-A": "Orion Pictures"
+    },
+    {
+      "id": "2hop__253612_110882",
+      "question": "What is the date of birth of the performer of Stand Up?",
+      "gold": "1 January 1986",
+      "dense": "March 25, 1982",
+      "system-A": "November 17, 1960"
+    },
+    {
+      "id": "2hop__256553_617289",
+      "question": "Who is the uncle of Liu Bin?",
+      "gold": "Liu Yin",
+      "dense": "Sima Daozi",
+      "system-A": "Liu Yan"
+    },
+    {
+      "id": "2hop__25788_25839",
+      "question": "What is the maximum load drawn by the device that was designed to standardize connection of computer peripherals?",
+      "gold": "five unit loads",
+      "dense": "150 mA",
+      "system-A": "six unit loads"
+    },
+    {
+      "id": "2hop__25797_990",
+      "question": "Which iPod generation introduced compatibility with the industry standard connection that was first widely used at version 1.1?",
+      "gold": "third generation",
+      "dense": "The second-generation iPod Touch and the fourth-generation iPod Nano introduced this compatibility.",
+      "system-A": "The third generation iPod introduced this compatibility."
+    },
+    {
+      "id": "2hop__258940_135844",
+      "question": "Who is the city where Lesnoye Sanatorium is located named after?",
+      "gold": "Palmiro Togliatti",
+      "dense": "Palmiro Togliatti",
+      "system-A": "Palmiro Togliatti"
+    },
+    {
+      "id": "2hop__2613_59409",
+      "question": "The rapper who owns Aspiro was inspired by what when writing Song Cry?",
+      "gold": "three different relationships he had in the past",
+      "dense": "Three different relationships he had in the past.",
+      "system-A": "Jay-Z"
+    },
+    {
+      "id": "2hop__263728_705527",
+      "question": "Who is the father of the father of Anwer Ali?",
+      "gold": "Ahmad Shah Bahadur",
+      "dense": "Muhammad Shah",
+      "system-A": "Muhammad Shah"
+    },
+    {
+      "id": "2hop__267938_92763",
+      "question": "What is the enrollment at Jack Clay's employer?",
+      "gold": "16,801",
+      "dense": "University of South Florida",
+      "system-A": "16,801"
+    },
+    {
+      "id": "2hop__268084_78303",
+      "question": "What was the name of the star of Forced Vengeance in Walter, Texas Ranger?",
+      "gold": "Cordell Walker",
+      "dense": "Joel McCrea",
+      "system-A": "William Holden"
+    },
+    {
+      "id": "2hop__269766_43945",
+      "question": "Common Sense which was written by the author of The Age of Reason was an important work because?",
+      "gold": "crystallized the rebellious demand for independence from Great Britain",
+      "dense": "It advocated for independence from Great Britain.",
+      "system-A": "It advocated for independence from Great Britain."
+    },
+    {
+      "id": "2hop__272714_113442",
+      "question": "On what date did the creator of Peace Concluded die?",
+      "gold": "13 August 1896",
+      "dense": "1856",
+      "system-A": "211"
+    },
+    {
+      "id": "2hop__273020_57594",
+      "question": "What gun was used by Pollack's director in Westworld?",
+      "gold": "LeMat revolver",
+      "dense": "Thompson submachine gun",
+      "system-A": "Harris Woryka"
+    },
+    {
+      "id": "2hop__274110_413723",
+      "question": "In which district was Ernie Watts born?",
+      "gold": "West Berkshire",
+      "dense": "Reading",
+      "system-A": "Reading"
+    },
+    {
+      "id": "2hop__280451_84616",
+      "question": "What did the spouse of Andrea Dotti win a Tony for?",
+      "gold": "for Best Performance by a Leading Actress in a Play in Ondine",
+      "dense": "Tony Award",
+      "system-A": "Audrey Hepburn"
+    },
+    {
+      "id": "2hop__284789_52835",
+      "question": "Who wrote Turn Me On by the performer who also did Sinkin' Soon?",
+      "gold": "John D. Loudermilk",
+      "dense": "Norah Jones and Lee Alexander",
+      "system-A": "Norah Jones and Lee Alexander"
+    },
+    {
+      "id": "2hop__286621_67370",
+      "question": "When does the show of the cast member of Politically Incorrect start again in 2018?",
+      "gold": "January 19, 2018",
+      "dense": "May 29, 2018",
+      "system-A": "The show of the cast member of Politically Incorrect starts again in 2018 with the premiere of the fifth"
+    },
+    {
+      "id": "2hop__29191_59955",
+      "question": "What country is between Lithuania and Frederic Chopin's home country?",
+      "gold": "Kaliningrad Oblast",
+      "dense": "Poland",
+      "system-A": "Russia"
+    },
+    {
+      "id": "2hop__29339_40482",
+      "question": "Who did the Huguenots in the state primary Edwards won outside of Georgia buy land from?",
+      "gold": "Edmund Bellinger",
+      "dense": "British Landgrave Edmund Bellinger",
+      "system-A": "British Landgrave Edmund Bellinger"
+    },
+    {
+      "id": "2hop__29349_92763",
+      "question": "What is the enrollment where the first debate between Kerry and Bush took place?",
+      "gold": "16,801",
+      "dense": "University of Miami",
+      "system-A": "University of Miami"
+    },
+    {
+      "id": "2hop__29893_29898",
+      "question": "Which affiliate left the company that owns and operates most of the CBC television stations due to an agreement with CHBC?",
+      "gold": "CFJC-TV in Kamloops",
+      "dense": "CHBC",
+      "system-A": "CHBC"
+    },
+    {
+      "id": "2hop__30384_30351",
+      "question": "Who did Hay work for after being hired by his other notable influence regarding resource distribution other than Max Weber?",
+      "gold": "the Austrian government",
+      "dense": "Austrian government",
+      "system-A": "Austrian government"
+    },
+    {
+      "id": "2hop__304852_758385",
+      "question": "What administrative territorial entity contains the place where KPRM is licensed to broadcast to?",
+      "gold": "Hubbard County",
+      "dense": "Minnesota",
+      "system-A": "Kansas"
+    },
+    {
+      "id": "2hop__30905_189318",
+      "question": "Where did the person who sponsored the resolution to reopen trade with Vietnam along with Kerry go to college?",
+      "gold": "National War College",
+      "dense": "University of Texas School of Law",
+      "system-A": "Yale University"
+    },
+    {
+      "id": "2hop__31124_31093",
+      "question": "What nationality was the notable subjective idealist?",
+      "gold": "Irish",
+      "dense": "Indian",
+      "system-A": "British"
+    },
+    {
+      "id": "2hop__3131_3300",
+      "question": "Which season was the runner up of the third season of American Idol on?",
+      "gold": "season three",
+      "dense": "Caleb Lee Hutchinson",
+      "system-A": "Candice Glover"
+    },
+    {
+      "id": "2hop__31585_61048",
+      "question": "Who was the US physicist who directed the project that developed the first atomic bomb at the same place where Feynman worked on Water Boiler?",
+      "gold": "Robert Oppenheimer",
+      "dense": "Robert Oppenheimer",
+      "system-A": "Robert Oppenheimer"
+    },
+    {
+      "id": "2hop__32254_84601",
+      "question": "When did the spacecraft that detected storms on Neptune leave our solar system?",
+      "gold": "August 30, 2007",
+      "dense": "1989",
+      "system-A": "August 30, 2007"
+    },
+    {
+      "id": "2hop__326404_120065",
+      "question": "When did Charles Frederick II's birthplace fall?",
+      "gold": "1738",
+      "dense": "Merseburg",
+      "system-A": "1657"
+    },
+    {
+      "id": "2hop__32887_578772",
+      "question": "What is the dynasty the oldest wooden buildings in China be dated to an example of?",
+      "gold": "Chinese surname",
+      "dense": "Tang dynasty",
+      "system-A": "Tang dynasty"
+    },
+    {
+      "id": "2hop__33288_157788",
+      "question": "What is an example of a railroad line in the country first to invade Manchuria?",
+      "gold": "Yamanote Line loop",
+      "dense": "The Phayap Army sent troops to invade and occupy northeastern Burma.",
+      "system-A": "Royal Dutch Shell oil refineries at nearby Pladju (or Pladjoe)"
+    },
+    {
+      "id": "2hop__335418_279684",
+      "question": "What team was Anna Benson's husband on?",
+      "gold": "Pittsburgh Pirates",
+      "dense": "Pittsburgh Pirates",
+      "system-A": "Pittsburgh Pirates"
+    },
+    {
+      "id": "2hop__34594_160249",
+      "question": "Between which years was the war with the person who suffered a great amount of losses battling the Roman army?",
+      "gold": "323\u2013272 BC",
+      "dense": "225-208 BC",
+      "system-A": "279-280 BC"
+    },
+    {
+      "id": "2hop__34734_92852",
+      "question": "When did the U.S. stop trading with the country that started hostilities?",
+      "gold": "1940",
+      "dense": "1939",
+      "system-A": "1939"
+    },
+    {
+      "id": "2hop__347652_47134",
+      "question": "What is the mascot of the institution that owns Memorial Union?",
+      "gold": "Benny Beaver",
+      "dense": "The mascot of the institution that owns Memorial Union is the Ballroom.",
+      "system-A": "The mascot of the institution that owns Memorial Union is not mentioned directly in the passage."
+    },
+    {
+      "id": "2hop__347686_127399",
+      "question": "In what year was the group who performed Attics To Eden formed?",
+      "gold": "2005",
+      "dense": "2009",
+      "system-A": "2005"
+    },
+    {
+      "id": "2hop__347_59409",
+      "question": "Who was the person who acquired the parent company of the music service Beyonce owns part of talking about in the song Cry?",
+      "gold": "three different relationships he had in the past",
+      "dense": "Jay-Z",
+      "system-A": "Jay-Z"
+    },
+    {
+      "id": "2hop__351045_47134",
+      "question": "What is the mascot of the operator of RV Wecoma?",
+      "gold": "Benny Beaver",
+      "dense": "Benny Beaver",
+      "system-A": "Benny Beaver"
+    },
+    {
+      "id": "2hop__351275_75487",
+      "question": "Who is the federal leader of Leon Benoit's political party?",
+      "gold": "Andrew Scheer",
+      "dense": "Conservative Party of Canada",
+      "system-A": "Conservative Party of Canada"
+    },
+    {
+      "id": "2hop__35137_22896",
+      "question": "What is the name of one library that the author of The Canon of Medicine had access to?",
+      "gold": "Hamadan",
+      "dense": "Jagiellonian Library",
+      "system-A": "The Jagiellonian Library"
+    },
+    {
+      "id": "2hop__35137_22932",
+      "question": "Which interpretation of the work of the writer of The Canon of Medicine was taught more in Islamic schools?",
+      "gold": "al-Razi",
+      "dense": "The Canon of Medicine",
+      "system-A": "al-Razi's interpretation"
+    },
+    {
+      "id": "2hop__35137_22940",
+      "question": "What is the Book of Healing by the writer of The Canon of Medicine referred to in Arabic?",
+      "gold": "Kitab al-shifa",
+      "dense": "Kit\u0101b al-shif\u0101\u02be",
+      "system-A": "Kit\u0101b al-shif\u0101'"
+    },
+    {
+      "id": "2hop__35173_17335",
+      "question": "When did the person who ended the Archaemenid Empire by conquest in 330 BC die?",
+      "gold": "323 BC",
+      "dense": "Alexander the Great",
+      "system-A": "53 BC"
+    },
+    {
+      "id": "2hop__353836_80026",
+      "question": "In Willy Wonka and the Chocolate Factory, who played the character that the band who performs Eight Arms to Hold You is named after?",
+      "gold": "Julie Dawn Cole",
+      "dense": "Nina Gordon",
+      "system-A": "Leslie Bricusse"
+    },
+    {
+      "id": "2hop__35418_22458",
+      "question": "What does the acronym of the organization that said there is no historical connection to association football with any other game outside of Europe stand for?",
+      "gold": "International Federation of Association Football",
+      "dense": "FIFA",
+      "system-A": "FIFA"
+    },
+    {
+      "id": "2hop__35445_22458",
+      "question": "What is the full name of the organization that publishes he Laws of the Game?",
+      "gold": "International Federation of Association Football",
+      "dense": "International Football Association Board (IFAB)",
+      "system-A": "FIFA"
+    },
+    {
+      "id": "2hop__354635_174222",
+      "question": "What company succeeded the owner of Empire Sports Network?",
+      "gold": "Time Warner Cable",
+      "dense": "Adelphia Communications Corporation",
+      "system-A": "Adelphia Communications Corporation"
+    },
+    {
+      "id": "2hop__35566_17873",
+      "question": "What happened to Buckingham after the departure of the queen who Martha Ann Ricks presented the famed Liberian coffee tree to?",
+      "gold": "palace was seldom used, even neglected",
+      "dense": "The note was found pinned to the fence of Buckingham Palace in 1864, announcing it would be let or",
+      "system-A": "The notice was placed on the railings of Buckingham Palace announcing these premises would be let or sold due to the late occup"
+    },
+    {
+      "id": "2hop__35686_58556",
+      "question": "What is the food safety system of the antibiotic approval agency known as?",
+      "gold": "Food Safety Modernization Act (FSMA)",
+      "dense": "The Food and Drug Administration (FDA)",
+      "system-A": "The Food and Drug Administration (FDA)."
+    },
+    {
+      "id": "2hop__358582_189042",
+      "question": "What is the record label of the Thrill of a Lifetime performer?",
+      "gold": "New Renaissance Records",
+      "dense": "King Kobra",
+      "system-A": "Capitol Records"
+    },
+    {
+      "id": "2hop__359312_18803",
+      "question": "MV Miralda's owner announced it was in the process of doing what in April 2010?",
+      "gold": "trying to find a potential buyer for all of its operations in Finland",
+      "dense": "divesting from downstream business",
+      "system-A": "divesting from downstream business"
+    },
+    {
+      "id": "2hop__36269_73244",
+      "question": "Where is the origin of the river that Orlam clans crossed to migrate to Namibia?",
+      "gold": "Thaba Putsoa",
+      "dense": "Cape Colony",
+      "system-A": "Lesotho"
+    },
+    {
+      "id": "2hop__363214_590899",
+      "question": "The city that Psycho Donuts is located in is in which county?",
+      "gold": "Santa Clara County",
+      "dense": "Los Angeles County",
+      "system-A": "Santa Clara County"
+    },
+    {
+      "id": "2hop__363216_787353",
+      "question": "Where is the headquarters of the 1st Combat Communication Squadron located?",
+      "gold": "Ramstein-Miesenbach",
+      "dense": "Ramstein Air Base, Germany",
+      "system-A": "Ramstein Air Base, Germany"
+    },
+    {
+      "id": "2hop__364489_861485",
+      "question": "Where is the location of the headquarters of the publisher of Bamboo Among the Oaks?",
+      "gold": "Minnesota History Center",
+      "dense": "Westampton",
+      "system-A": "79 Seventh Avenue in Manhattan"
+    },
+    {
+      "id": "2hop__367318_7292",
+      "question": "What artist was featured on Smooth Jazz Stations, along with Kenny G and the performer of The Dance?",
+      "gold": "George Benson",
+      "dense": "Dave Koz",
+      "system-A": "George Benson"
+    },
+    {
+      "id": "2hop__37097_86208",
+      "question": "When does the river that the majority of Egyptians live near flood each year?",
+      "gold": "August",
+      "dense": "August 15, known as Wafaa El-Nil.",
+      "system-A": "The Nile floods annually."
+    },
+    {
+      "id": "2hop__374495_68633",
+      "question": "Who is the president of the organization that Avery Brundage is a member of?",
+      "gold": "Thomas Bach",
+      "dense": "The Knights of Columbus",
+      "system-A": "The International Olympic Committee"
+    },
+    {
+      "id": "2hop__37656_160040",
+      "question": "Who is the guy defending this stuff from the highest authority in Protestantism for morals?",
+      "gold": "Josh McDowell",
+      "dense": "Josh McDowell",
+      "system-A": "Josh McDowell"
+    },
+    {
+      "id": "2hop__37765_85990",
+      "question": "Who were the leaders of the opposition of the political group that has a large number of Protestants?",
+      "gold": "anti-slavery activists, modernizers, ex Whigs and ex Free Soilers",
+      "dense": "William III of Orange and his allies, including the Dutch Republic, were the leaders of the opposition against Louis XIV and the",
+      "system-A": "The Reformed Political Party (SGP) in the Netherlands."
+    },
+    {
+      "id": "2hop__38229_84500",
+      "question": "What does the name of the topic that Eisenhower didn't discuss during the campaign stand for?",
+      "gold": "North Atlantic Treaty Organization",
+      "dense": "Berlin",
+      "system-A": "Communism"
+    },
+    {
+      "id": "2hop__384238_74735",
+      "question": "What song did Paul McCartney write for Sean Lennon's siblings?",
+      "gold": "``Hey Jude ''",
+      "dense": "Michelle",
+      "system-A": "Hey Jude"
+    },
+    {
+      "id": "2hop__386236_350892",
+      "question": "Where was Osbert Sitwell's sibling educated?",
+      "gold": "Eton College",
+      "dense": "King's College, Cambridge",
+      "system-A": "King's College, Cambridge"
+    },
+    {
+      "id": "2hop__388523_75487",
+      "question": "Who is the federal leader of the party that James Rajotte is a member of?",
+      "gold": "Andrew Scheer",
+      "dense": "Andrew Scheer",
+      "system-A": "Stephen Harper"
+    },
+    {
+      "id": "2hop__39063_212301",
+      "question": "Who is the father of the man who conceived of the 'new' police?",
+      "gold": "Arthur Peel",
+      "dense": "Robert Peel",
+      "system-A": "Robert Peel"
+    }
+  ]
+}
