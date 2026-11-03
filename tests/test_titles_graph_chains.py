@@ -126,3 +126,41 @@ def test_edge_scorer_changes_which_edges_survive_the_cap(mini_musique):
         return np.array([1.0 if c[0] == worst else 0.0 for c in cands])
     g = build_title_graph(mini_musique.passages, GraphConfig(fan_out=1), edge_scorer=prefer_worst)
     assert [e.dst for e in g.neighbors(src)] == [worst]
+
+
+def _assert_same_csr(a, b):
+    import numpy as np
+    assert a.ids == b.ids and a.bridges == b.bridges
+    for f in ("indptr", "dst", "weight", "salience", "co_mention", "bridge", "cos_uv", "bridge_log_df"):
+        assert np.array_equal(getattr(a, f), getattr(b, f)), f
+
+
+def test_streaming_builder_equals_reference(mini_musique):
+    """Decision 0013 B1: the streamed CSR equals the reference builder's, array for array."""
+    import numpy as np
+
+    from hsi_core import registry
+    from hsi_core.csr import CompactGraph
+    from hsi_core.graph import entity_key
+    from hsi_core.graph_stream import build_compact_graph
+    ps = list(mini_musique.passages)
+    ids = sorted(p.id for p in ps)[::-1]                        # positions differ from input order
+    vecs = registry.load("encoder", "hashing", dim=64).encode([p.text for p in ps], "passage")
+    by = {p.id: v for p, v in zip(ps, vecs, strict=True)}
+    vecs = np.stack([by[i] for i in ids])
+    ext = registry.load("mention_extractor", "capitalized", **EXTRACTOR).fit([*CORPUS, *(p.text for p in ps)])
+    mentions = {p.id: {entity_key(s): sal for s, sal in ext.extract(p.text)} for p in ps}
+    extra = {entity_key("Facebook"): [ps[0].id, ps[0].id, ps[1].id]}   # duplicate anchors on purpose
+
+    def scorer(src, cands, participants):
+        return np.array([float(len(d) % 5) + w for d, w, *_ in cands])   # many ties on purpose
+    variants = [dict(cfg=GraphConfig(fan_out=2)), dict(cfg=GraphConfig(fan_out=3), mentions=mentions),
+                dict(cfg=GraphConfig(fan_out=2, bidirectional=False), mentions=mentions, extra_anchors=extra),
+                dict(cfg=GraphConfig(fan_out=1, hub_degree_cap=3), mentions=mentions, extra_anchors=extra),
+                dict(cfg=GraphConfig(fan_out=2), mentions=mentions, edge_scorer=scorer)]
+    for kw in variants:
+        ref_graph = build_title_graph(ps, **kw)
+        ref = CompactGraph.from_graph(ref_graph, ids, vecs)
+        got, stats = build_compact_graph(ps, ids, vecs, **kw)
+        _assert_same_csr(got, ref)
+        assert stats["raw_edges"] == ref_graph.raw_edge_count and stats["hubs"] == len(ref_graph.hubs)

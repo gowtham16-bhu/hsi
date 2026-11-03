@@ -28,6 +28,7 @@ from hsi_core.csr import CompactGraph
 from hsi_core.encoding import CachedEncoder, passage_text
 from hsi_core.expansion import ExpansionConfig, OnlineExpansion
 from hsi_core.graph import GraphConfig, build_title_graph, entity_key
+from hsi_core.graph_stream import build_compact_graph
 from hsi_core.hops import HopConfig, HopRetriever
 from hsi_core.index import ShortcutIndex, shortcuts_from_chains
 from hsi_core.metrics import bootstrap_mean, full_chain_recall, paired_difference, percentile
@@ -147,8 +148,8 @@ def _slice_hops(name: str, hops: list[int]) -> set[int]:
     return set(hops) if name == "all" else {int(x) for x in name.split("+")}
 
 
-def build_graph(section: GraphSection, passages: list, vector_of=None, keep_candidates: bool = False) -> Any:
-    """Graph construction shared by the experiment runner and the trainers."""
+def graph_inputs(section: GraphSection, passages: list, vector_of=None) -> tuple[Any, Any]:
+    """Mentions and the optional learned edge scorer, shared by both graph builders."""
     scorer = None
     if section.edge_scorer is not None:
         if vector_of is None:
@@ -160,8 +161,20 @@ def build_graph(section: GraphSection, passages: list, vector_of=None, keep_cand
                                   **section.mention_extractor.options)
         extractor.fit(p.text for p in passages)
         mentions = {p.id: {entity_key(s): sal for s, sal in extractor.extract(p.text)} for p in passages}
+    return mentions, scorer
+
+
+def build_graph(section: GraphSection, passages: list, vector_of=None, keep_candidates: bool = False) -> Any:
+    """Reference graph construction (PassageGraph), shared by the experiment runner and the trainers."""
+    mentions, scorer = graph_inputs(section, passages, vector_of)
     return build_title_graph(passages, section.to_core(), mentions=mentions, edge_scorer=scorer,
                              keep_candidates=keep_candidates)
+
+
+def build_compact(section: GraphSection, passages: list, ids: list[str], vecs: Any, vector_of=None) -> Any:
+    """Streaming construction straight to CSR (decision 0013); same edges as `build_graph`."""
+    mentions, scorer = graph_inputs(section, passages, vector_of)
+    return build_compact_graph(passages, ids, vecs, section.to_core(), mentions=mentions, edge_scorer=scorer)
 
 
 def evaluate_rule(rule: DecisionRule, report: dict[str, Any]) -> dict[str, Any]:

@@ -17,6 +17,16 @@ from hsi_core.text import tokens
 from hsi_core.titles import TokenAhoCorasick
 
 
+def cos_uv(vecs: np.ndarray, src: np.ndarray, dst: np.ndarray, chunk: int = 65536) -> np.ndarray:
+    """cos(u, v) per edge, in chunks so memory stays O(chunk · d), not O(edges · d)."""
+    vecs = np.asarray(vecs, dtype=np.float32)
+    out = np.empty(len(dst), dtype=np.float32)
+    for a in range(0, len(dst), chunk):
+        b = min(a + chunk, len(dst))
+        out[a:b] = np.einsum("ij,ij->i", vecs[src[a:b]], vecs[dst[a:b]])
+    return out
+
+
 @dataclass
 class CompactGraph:
     ids: list[str]                 # passage position -> passage id
@@ -90,15 +100,13 @@ class CompactGraph:
         flat = [x for row in rows for x in row]
         dst = np.fromiter((x[0] for x in flat), dtype=np.int32, count=len(flat))
         src = np.repeat(np.arange(len(ids), dtype=np.int64), np.diff(indptr))
-        vecs = np.asarray(vecs, dtype=np.float32)
-        cos_uv = np.einsum("ij,ij->i", vecs[src], vecs[dst]) if len(flat) else np.zeros(0, dtype=np.float32)
         df = np.asarray([graph.participants.get(b, 1) for b in bridges], dtype=np.float64)
         return cls(ids=list(ids), indptr=indptr, dst=dst,
                    weight=np.fromiter((x[1] for x in flat), dtype=np.float32, count=len(flat)),
                    salience=np.fromiter((x[2] for x in flat), dtype=np.float32, count=len(flat)),
                    co_mention=np.fromiter((x[3] for x in flat), dtype=np.float32, count=len(flat)),
                    bridge=np.fromiter((x[4] for x in flat), dtype=np.int32, count=len(flat)),
-                   cos_uv=cos_uv.astype(np.float32), bridges=bridges, bridge_log_df=np.log1p(df))
+                   cos_uv=cos_uv(vecs, src, dst), bridges=bridges, bridge_log_df=np.log1p(df))
 
     def save(self, path: str | Path) -> None:
         np.savez(path, ids=np.asarray(self.ids, dtype=str), indptr=self.indptr, dst=self.dst,

@@ -2,7 +2,8 @@
 
 For each corpus size N, the corpus is the benchmark questions' own passages plus real passages from
 the pooled datasets (seeded shuffle), so quality is measured on the same questions against more and
-more distractors. Reported per N: graph build time, edges, compact-graph bytes per edge, pushes and
+more distractors. Reported per N: graph build time (streaming builder, decision 0013), peak memory, edges,
+compact-graph bytes per edge, pushes and
 vectors read per query, walk latency (seed search timed separately) and gold-passage recall@k for
 dense, global learned PPR and learned push.
 
@@ -14,6 +15,7 @@ import argparse
 import json
 import platform
 import random
+import resource
 import sys
 import time
 from pathlib import Path
@@ -24,7 +26,6 @@ from pydantic import BaseModel, ConfigDict
 
 from hsi_core import registry
 from hsi_core.config import PluginSpec, config_hash, load_yaml
-from hsi_core.csr import CompactGraph
 from hsi_core.encoding import CachedEncoder
 from hsi_core.index import ShortcutIndex
 from hsi_core.metrics import percentile
@@ -32,7 +33,7 @@ from hsi_core.ppr import PPRConfig, PPRRetriever
 from hsi_core.push import LocalPushRetriever, PushConfig
 from hsi_core.transitions import LinearTransition
 from hsi_harness.datasets import load
-from hsi_harness.gate0 import GraphSection, SampleRef, build_graph
+from hsi_harness.gate0 import GraphSection, SampleRef, build_compact
 
 
 class _Strict(BaseModel):
@@ -96,15 +97,11 @@ def run(cfg: BenchConfig) -> dict[str, Any]:
         dense = ShortcutIndex(enc, lambda: registry.load("vector_store", cfg.vector_store.plugin,
                                                          **cfg.vector_store.options)).build(passages)
         t_encode_index = time.perf_counter() - t0
-        t0 = time.perf_counter()
-        graph = build_graph(cfg.graph, passages, vector_of=dense.raw_vecs.__getitem__)
-        t_graph = time.perf_counter() - t0
         ids = [e[0] for e in dense.entries]
         vecs = np.stack([dense.passage_vecs[pid] for pid in ids]).astype(np.float32)
         t0 = time.perf_counter()
-        csr = CompactGraph.from_graph(graph, ids, vecs)
-        t_csr = time.perf_counter() - t0
-        del graph
+        csr, _stats = build_compact(cfg.graph, passages, ids, vecs, vector_of=dense.raw_vecs.__getitem__)
+        t_graph = time.perf_counter() - t0
 
         push = LocalPushRetriever(dense, csr, PushConfig(**cfg.push), transition_model=model)
         glob = PPRRetriever(dense, csr, PPRConfig(**cfg.ppr), transition_model=model) \
@@ -130,7 +127,8 @@ def run(cfg: BenchConfig) -> dict[str, Any]:
         row = {
             "passages": len(passages), "edges": csr.edge_count,
             "csr_bytes_per_edge": csr.nbytes / max(1, csr.edge_count),
-            "build_s": {"encode_and_index": t_encode_index, "graph": t_graph, "compact": t_csr},
+            "build_s": {"encode_and_index": t_encode_index, "graph": t_graph},
+            "peak_rss_mb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
             "pushes_per_query": {"p50": percentile(pushes, 50), "p95": percentile(pushes, 95), "max": max(pushes)},
             "vectors_read_per_query": {"p50": percentile(reads, 50), "p95": percentile(reads, 95)},
             "latency_ms": {k: ({"p50": percentile(v, 50), "p95": percentile(v, 95)} if v else None)
@@ -146,9 +144,10 @@ def run(cfg: BenchConfig) -> dict[str, Any]:
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     md = [f"# Scaling benchmark `{report['config_hash']}`", "",
           f"{len(qds.questions)} {cfg.questions.dataset} questions; encoder `{enc.name}`; no LLM calls.", "",
-          f"| Passages | Edges | Bytes/edge | Graph build s | Pushes/query p50 (max) | Vectors read p50 | "
+          f"| Passages | Edges | Bytes/edge | Graph build s | Peak RSS GB | Pushes/query p50 (max) | "
+          f"Vectors read p50 | "
           f"Seed search p50 ms | Push p50 ms | Global p50 ms | GP@{cfg.k} dense | push | global |",
-          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         g = r["latency_ms"]["global"]
         pr = r[f"passage_recall@{cfg.k}"]
@@ -156,7 +155,7 @@ def run(cfg: BenchConfig) -> dict[str, Any]:
         g_ms = "" if g is None else f"{g['p50']:.1f}"
         g_rec = "" if pr["global"] is None else f"{pr['global'] * 100:.1f}"
         md.append(f"| {r['passages']:,} | {r['edges']:,} | {r['csr_bytes_per_edge']:.0f} | "
-                  f"{r['build_s']['graph']:.0f} | {pp['p50']:.0f} ({pp['max']}) | "
+                  f"{r['build_s']['graph']:.0f} | {r['peak_rss_mb'] / 1024:.1f} | {pp['p50']:.0f} ({pp['max']}) | "
                   f"{r['vectors_read_per_query']['p50']:.0f} | {r['latency_ms']['seed_search']['p50']:.1f} | "
                   f"{r['latency_ms']['push']['p50']:.1f} | {g_ms} | "
                   f"{pr['dense'] * 100:.1f} | {pr['push'] * 100:.1f} | {g_rec} |")

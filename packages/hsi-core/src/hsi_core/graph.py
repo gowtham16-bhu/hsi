@@ -96,16 +96,26 @@ Candidate = tuple[str, float, str, float, EdgeType]
 EdgeScorer = Callable[[str, list[Candidate], Mapping[str, int]], np.ndarray]
 
 
-def build_title_graph(passages: Sequence[Passage], cfg: GraphConfig | None = None,
-                      extra_anchors: Mapping[str, Iterable[str]] | None = None,
-                      mentions: Mapping[str, Mapping[str, float]] | None = None,
-                      edge_scorer: EdgeScorer | None = None, keep_candidates: bool = False) -> PassageGraph:
-    """Build the graph. `mentions` maps passage id -> {entity key: salience} from a mention
-    extractor plugin; title mentions are always found here with an Aho–Corasick matcher.
+@dataclass
+class Prepared:
+    """Everything both graph builders share, computed by one code path (decision 0013)."""
+    by_id: dict[str, Passage]
+    order: dict[str, int]                         # passage id -> position in the input sequence
+    own: dict[str, str]                           # passage id -> its own title entity
+    anchors: dict[str, list[str]]                 # entity -> anchor passage ids
+    n_tokens: dict[str, int]
+    ment: dict[str, dict[str, float]]             # passage -> {mentioned entity: salience}, in found order
+    members: dict[str, dict[str, float]]          # entity -> {participant passage: salience}
+    participants: dict[str, int]
+    hubs: set[str]
 
-    The fan-out cap keeps each passage's top edges by `edge_scorer` (decision 0010) when given,
-    otherwise by the prior weight · (0.5 + 0.5 · salience)."""
-    cfg = cfg or GraphConfig()
+    def ntok(self, ent: str) -> int:
+        return self.n_tokens.get(ent) or len(tokens(ent.split(":", 1)[1]))
+
+
+def prepare(passages: Sequence[Passage], cfg: GraphConfig,
+            extra_anchors: Mapping[str, Iterable[str]] | None = None,
+            mentions: Mapping[str, Mapping[str, float]] | None = None) -> Prepared:
     by_id = {p.id: p for p in passages}
     own: dict[str, str] = {}
     anchors: dict[str, list[str]] = defaultdict(list)
@@ -138,9 +148,7 @@ def build_title_graph(passages: Sequence[Passage], cfg: GraphConfig | None = Non
                 found[ent] = max(found.get(ent, 0.0), sal)
         ment[p.id] = found
 
-    entities_of = {pid: frozenset(ment.get(pid, {}).keys() | ({own[pid]} if pid in own else set()))
-                   for pid in by_id}
-    members: dict[str, dict[str, float]] = defaultdict(dict)   # entity -> {passage: salience}
+    members: dict[str, dict[str, float]] = defaultdict(dict)
     for pid, found in ment.items():
         for ent, sal in found.items():
             members[ent][pid] = sal
@@ -149,9 +157,28 @@ def build_title_graph(passages: Sequence[Passage], cfg: GraphConfig | None = Non
             members[ent][pid] = 1.0
     participants = {e: len(m) for e, m in members.items()}
     hubs = {e for e, c in participants.items() if c > cfg.hub_degree_cap}
+    return Prepared(by_id=by_id, order={p.id: i for i, p in enumerate(passages)}, own=own, anchors=dict(anchors),
+                    n_tokens=n_tokens, ment=ment, members=dict(members), participants=participants, hubs=hubs)
 
-    def ntok(ent: str) -> int:
-        return n_tokens.get(ent) or len(tokens(ent.split(":", 1)[1]))
+
+def build_title_graph(passages: Sequence[Passage], cfg: GraphConfig | None = None,
+                      extra_anchors: Mapping[str, Iterable[str]] | None = None,
+                      mentions: Mapping[str, Mapping[str, float]] | None = None,
+                      edge_scorer: EdgeScorer | None = None, keep_candidates: bool = False) -> PassageGraph:
+    """Build the graph. `mentions` maps passage id -> {entity key: salience} from a mention
+    extractor plugin; title mentions are always found here with an Aho–Corasick matcher.
+
+    The fan-out cap keeps each passage's top edges by `edge_scorer` (decision 0010) when given,
+    otherwise by the prior weight · (0.5 + 0.5 · salience).
+
+    Reference implementation: it holds every candidate pair in memory. At scale use
+    `graph_stream.build_compact_graph` (decision 0013), which yields the same edges."""
+    cfg = cfg or GraphConfig()
+    prep = prepare(passages, cfg, extra_anchors, mentions)
+    by_id, own, anchors, ment, members = prep.by_id, prep.own, prep.anchors, prep.ment, prep.members
+    participants, hubs, ntok = prep.participants, prep.hubs, prep.ntok
+    entities_of = {pid: frozenset(ment.get(pid, {}).keys() | ({own[pid]} if pid in own else set()))
+                   for pid in by_id}
 
     # best (prior, weight, bridge, salience, type) per (src, dst)
     best: dict[str, dict[str, tuple[float, float, str, float, EdgeType]]] = defaultdict(dict)
