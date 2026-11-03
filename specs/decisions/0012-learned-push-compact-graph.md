@@ -60,3 +60,22 @@ Run `runs/dev/musique-a04aeaa235e94bed.json` (MuSiQue train, 1,000 questions, bg
 - **No regression from the refactor:** global learned PPR on the compact graph reproduces the earlier
   run `musique-820636249af67b59` exactly (GP@5 0.62117, full chain @10 0.511); its p50 latency fell from
   155 ms to 83 ms because the edge arrays are now built once and shared.
+
+## Scaling benchmark (2026-11-03): **incomplete**: the 140K size ran out of memory while building the graph
+Config `configs/bench/scale.yaml`, 200 unseen MuSiQue train questions, bge-small, log `runs/bench/scale.log`.
+
+| Passages | Edges | Bytes/edge | Encode s | Graph build s | Pushes p50 (max) | Push p50 ms | Global p50 ms | GP@5 dense | push | global |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 10,000 | 272,339 | 24.5 | 163 | 12 | 498 (843) | 44.4 | 68.1 | 55.9 | 64.8 | 64.8 |
+| 40,000 | 1,067,120 | 24.5 | 561 | 52 | 537 (862) | 54.4 | 215.8 | 48.5 | 55.4 | 55.2 |
+| 140,000 | — | — | — | killed (13.8 GB) | — | — | — | — | — | — |
+
+- From 10K to 40K, pushes per query rose 8% (498 → 537) while global PPR latency tripled (68 → 216 ms).
+  This matches the pass condition so far, but the pre-registered largest size did not run, so the
+  benchmark is **not passed**.
+- **Finding:** the graph *build* does not scale. `build_title_graph` keeps every candidate pair in Python
+  dicts before the fan-out cap, plus Python `Edge` objects. Next: build the graph as a streaming array
+  pipeline (per-entity candidate generation → per-source top-m selection → CSR), never materializing
+  all candidates as Python objects.
+- Encoding ran at about 70 passages/s on this 4-CPU container (bge-small). It dominates ingestion and must be
+  parallelized (GPU or many workers); that is independent of the algorithm.
