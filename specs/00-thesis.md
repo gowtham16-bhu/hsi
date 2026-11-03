@@ -190,3 +190,7 @@ from it;** SPRIG and "Read the Route" are still unread.
 over dense retrieval shrinks from about +9 points at 10K passages to +2.6 at 140K (bge-small, MuSiQue train
 questions, real distractors). It is not recovered by hub facets, larger candidate pools, or retraining the hop
 model at scale. Most likely cause: weaker seeds from the encoder. Any public claim must state this limit.
+
+**Name (2026-11-03).** HSI now stands for *Hop-Steered Index*: an index of links between documents, walked one
+hop at a time, each hop steered by the learned hop model (decision 0007). The original expansion, *Hierarchical
+Shortcut Index*, described the withdrawn RQ1 idea and is kept only as history.

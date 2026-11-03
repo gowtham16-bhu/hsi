@@ -1,11 +1,14 @@
-# HSI: retrieval that follows shared names between documents
+# HSI (Hop-Steered Index): retrieval that follows shared names between documents
 
 **HSI finds the documents a question needs even when some of them don't look like the question.**
 It links documents that mention the same names, then, for each question, walks those links from the
 best search results, steered by a small learned model. The index is built without any LLM calls, on an
 ordinary CPU.
 
-HSI is an open-source research project. It works on text today; it is not a finished product.
+**Hop-Steered Index**: an index of links between documents, walked one hop at a time, with each hop
+steered by a small learned model.
+
+HSI is an exploratory, open-source research project. It works on text today; it is not a finished product.
 
 ![HSI overview: the problem, the core components, and the results](docs/images/hsi-overview.png)
 
@@ -333,8 +336,8 @@ that model inside local push, so cost stays flat; a name finder learned from the
 name-recognition model; and a scale study that reports where the gain fades. See the novelty audit in
 [`specs/00-thesis.md`](specs/00-thesis.md).
 
-> The name HSI comes from the first idea, a *Hierarchical Shortcut Index* of pre-computed chains. That
-> idea failed and was dropped; the name stayed.
+> **About the name.** HSI now stands for *Hop-Steered Index*. It first stood for *Hierarchical Shortcut
+> Index*, the first idea of pre-computed chains, which failed and was dropped (see `specs/decisions/gate0.md`).
 
 ## 11. Roadmap
 
