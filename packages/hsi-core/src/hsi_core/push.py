@@ -82,9 +82,14 @@ class LocalPushRetriever:
         return np.fromiter((cache[int(v)] for v in nodes), dtype=np.float64, count=len(nodes))
 
     def _transitions(self, u: int, q: np.ndarray, rel: dict[int, float],
-                     in_q: np.ndarray | None) -> tuple[np.ndarray, np.ndarray]:
+                     in_q: np.ndarray | None, visible: np.ndarray | None) -> tuple[np.ndarray, np.ndarray]:
         sl = self.g.edges_of(u)
         dst = self.g.dst[sl]
+        if visible is not None and len(dst):
+            keep = visible[dst]
+            if not keep.all():                 # permission-aware walk: never step into an invisible passage
+                sl = np.arange(sl.start, sl.stop)[keep]
+                dst = dst[keep]
         if len(dst) == 0:
             return dst, np.zeros(0)
         if self.model is not None:
@@ -98,9 +103,25 @@ class LocalPushRetriever:
                 w = w * np.exp(self.cfg.beta * (sims - sims.max()))
         return dst, w / w.sum()
 
-    def retrieve_vec(self, q: np.ndarray, k: int, top_k: int, question: str = "") -> Retrieved:
+    def _seed_hits(self, q: np.ndarray, visible: np.ndarray | None) -> list:
+        """Top `seeds` hits among visible passages (all passages when `visible` is None)."""
+        n, total = self.cfg.seeds, len(self.g.ids)
+        while True:
+            hits = self.dense.search(q, min(n, total))
+            if visible is not None:
+                hits = [h for h in hits if visible[self.pos[h.passages[0]]]]
+            if len(hits) >= self.cfg.seeds or n >= total:
+                return hits[: self.cfg.seeds]
+            n *= 2
+
+    def retrieve_vec(self, q: np.ndarray, k: int, top_k: int, question: str = "",
+                     visible: np.ndarray | None = None) -> Retrieved:
+        """`visible` (bool per graph position) restricts seeds, steps and results to visible passages
+        (specs/additions/A5 §4)."""
         t0 = time.perf_counter()
-        hits = self.dense.search(q, self.cfg.seeds)
+        if visible is not None and len(visible) != self.g.n:
+            raise ValueError("visible mask must have one entry per passage")
+        hits = self._seed_hits(q, visible)
         seeds = {self.pos[h.passages[0]]: max(h.score, 0.0) for h in hits}
         total = sum(seeds.values())
         if total == 0:
@@ -125,7 +146,7 @@ class LocalPushRetriever:
             pushes += 1
             p[u] = p.get(u, 0.0) + a * ru
             r[u] = 0.0
-            dst, prob = self._transitions(u, q, rel, in_q)
+            dst, prob = self._transitions(u, q, rel, in_q, visible)
             spread = (1 - a) * ru
             if len(dst) == 0:                  # dangling: mass returns to the seeds
                 targets = [(v, w / total) for v, w in seeds.items()]
@@ -140,4 +161,4 @@ class LocalPushRetriever:
         self.total_pushes += pushes
         ranked = sorted(p.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
         return Retrieved(passages=[self.g.ids[u] for u, _ in ranked], hits=hits[:top_k],
-                         latency_ms=(time.perf_counter() - t0) * 1000)
+                         latency_ms=(time.perf_counter() - t0) * 1000, scores=[v for _, v in ranked])

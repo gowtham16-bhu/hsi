@@ -22,13 +22,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from hsi_core import registry
 from hsi_core.bipartite import BipartiteConfig, BipartiteWalkRetriever
 from hsi_core.bm25 import BM25Index
+from hsi_core.build import GraphSection, graph_inputs
 from hsi_core.chains import ChainConfig, enumerate_chains, select_by_prior
 from hsi_core.config import PluginSpec, config_hash, load_yaml
 from hsi_core.csr import CompactGraph
 from hsi_core.encoding import CachedEncoder, passage_text
 from hsi_core.expansion import ExpansionConfig, OnlineExpansion
-from hsi_core.graph import GraphConfig, build_title_graph, entity_key
-from hsi_core.graph_stream import build_compact_graph
+from hsi_core.graph import build_title_graph
 from hsi_core.hops import HopConfig, HopRetriever
 from hsi_core.index import ShortcutIndex, shortcuts_from_chains
 from hsi_core.metrics import bootstrap_mean, full_chain_recall, paired_difference, percentile
@@ -36,33 +36,13 @@ from hsi_core.model import KeyMode
 from hsi_core.ppr import PPRConfig, PPRRetriever
 from hsi_core.push import LocalPushRetriever, PushConfig
 from hsi_core.smoothing import SmoothingConfig, smooth_vectors
-from hsi_core.transitions import LinearTransition, make_edge_scorer
+from hsi_core.transitions import LinearTransition
 from hsi_core.waterfall import classify, summarize
 from hsi_harness.datasets import Dataset, load
 
 
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
-
-class GraphSection(_Strict):
-    fan_out: int
-    hub_degree_cap: int
-    bidirectional: bool
-    co_mention: bool
-    weight_multi_token: float
-    weight_single_token: float
-    reverse_factor: float
-    co_mention_multi_token: float
-    co_mention_single_token: float
-    hub_mode: Literal["drop", "facets"] = "drop"      # decision 0014
-    facet_size: int | None = None
-    facet_iterations: int | None = None
-    mention_extractor: PluginSpec | None = None
-    edge_scorer: str | None = None          # learned index-time edge selection model (decision 0010)
-
-    def to_core(self) -> GraphConfig:
-        return GraphConfig(**self.model_dump(exclude={"mention_extractor", "edge_scorer"}))
 
 
 class ChainSection(_Strict):
@@ -151,33 +131,11 @@ def _slice_hops(name: str, hops: list[int]) -> set[int]:
     return set(hops) if name == "all" else {int(x) for x in name.split("+")}
 
 
-def graph_inputs(section: GraphSection, passages: list, vector_of=None) -> tuple[Any, Any]:
-    """Mentions and the optional learned edge scorer, shared by both graph builders."""
-    scorer = None
-    if section.edge_scorer is not None:
-        if vector_of is None:
-            raise ValueError("a learned edge scorer needs passage vectors")
-        scorer = make_edge_scorer(LinearTransition.load(section.edge_scorer), vector_of)
-    mentions = None
-    if section.mention_extractor is not None:
-        extractor = registry.load("mention_extractor", section.mention_extractor.plugin,
-                                  **section.mention_extractor.options)
-        extractor.fit(p.text for p in passages)
-        mentions = {p.id: {entity_key(s): sal for s, sal in extractor.extract(p.text)} for p in passages}
-    return mentions, scorer
-
-
 def build_graph(section: GraphSection, passages: list, vector_of=None, keep_candidates: bool = False) -> Any:
     """Reference graph construction (PassageGraph), shared by the experiment runner and the trainers."""
     mentions, scorer = graph_inputs(section, passages, vector_of)
     return build_title_graph(passages, section.to_core(), mentions=mentions, edge_scorer=scorer,
                              keep_candidates=keep_candidates)
-
-
-def build_compact(section: GraphSection, passages: list, ids: list[str], vecs: Any, vector_of=None) -> Any:
-    """Streaming construction straight to CSR (decision 0013); same edges as `build_graph`."""
-    mentions, scorer = graph_inputs(section, passages, vector_of)
-    return build_compact_graph(passages, ids, vecs, section.to_core(), mentions=mentions, edge_scorer=scorer)
 
 
 def evaluate_rule(rule: DecisionRule, report: dict[str, Any]) -> dict[str, Any]:

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hsi-service"
+version = "0.1.0"
+description = "HSI index builder and retrieval service (REST and MCP), specs/additions/A5"
+requires-python = ">=3.11"
+dependencies = ["hsi-core", "numpy>=1.26", "pydantic>=2.6", "pyyaml>=6.0", "fastapi>=0.115,<1",
+                "uvicorn>=0.30,<1", "mcp>=1.2,<2"]
+
+[project.scripts]
+hsi-index = "hsi_service.cli:index_main"
+hsi-serve = "hsi_service.cli:serve_main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hsi_service"]

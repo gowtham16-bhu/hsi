@@ -22,3 +22,22 @@ from the training questions.
 - **T2:** at 10K, push GP@5 ≥ 63.8.
 - **T3:** push p50 ≤ 300 ms at 140K.
 If T1 fails, the remaining lever is the seeds (encoder), decision 0017.
+
+## Outcome (2026-11-03): **T1 failed** (T2, T3 pass). Retraining at scale changes nothing measurable.
+Model `runs/models/transitions-musique-v5-140k-fan128.json` (140,000-passage graph, 974 training groups;
+validation top-1 36.6% vs the rule's 15.5%). Benchmark `runs/bench/scale-fan128-v5.log`:
+
+| Passages | Dense GP@5 | Push, v2 model (0015) | Push, v5 model (trained at 140K) | Pushes p50 | Push p50 ms |
+|---|---|---|---|---|---|
+| 10K | 55.9 | 65.4 (+9.5) | 64.9 (+9.0) | 768 | 132 |
+| 140K | 44.8 | 47.5 (+2.6) | 47.5 (+2.6) | 782 | 188 |
+
+The retrained model weights rare bridges and anchor edges more strongly (θ log_df −0.41 → −1.11,
+co_mention −0.36 → −0.67) but ranks the same passages into the top 5. The hop model is not the cause.
+
+**Conclusion of the scale track (decisions 0013–0016).** Cost scales as designed (flat pushes, flat
+latency, 3.7 GB at 140K). Quality gain over dense falls from about +9 at 10K to +2.6 at 140K, and neither
+graph fixes (facets, larger pools) nor retraining recover it. The diagnosed remaining cause is the seeds:
+misses with no gold passage among the seeds nearly double (57 → 104 of 469). Testing a stronger encoder at
+140K needs hours of CPU or a GPU; it is deferred. Per the owner's plan, algorithm work stops here and the
+product track starts (A5). This negative scale result is reported as a finding, not hidden.

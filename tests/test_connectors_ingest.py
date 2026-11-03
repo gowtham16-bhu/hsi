@@ -119,3 +119,41 @@ def test_ingest_structure_first_and_local_edits():
 def test_chunk_config_validation(bad):
     with pytest.raises(ValueError):
         ChunkConfig(**bad)
+
+
+class JsonlFileDriver:
+    """Creates, changes and deletes records in one JSONL file for the conformance kit."""
+
+    def __init__(self, path):
+        self.path = path
+        self.rows: dict[str, dict] = {}
+
+    def _flush(self):
+        self.path.write_text("".join(json.dumps(r) + "\n" for r in self.rows.values()), encoding="utf-8")
+
+    def seed(self, n):
+        for i in range(n):
+            self.rows[f"r{i}"] = {"id": f"r{i}", "title": f"Item {i}", "text": f"Item {i} text.",
+                                  "acl": {"principals": ["group:a"]} if i % 2 else {"public": True}}
+        self._flush()
+        return [f"kit:r{i}" for i in range(n)]
+
+    def modify(self, record_id):
+        self.rows[record_id.removeprefix("kit:")]["text"] += " Changed."
+        self._flush()
+
+    def delete(self, record_id):
+        del self.rows[record_id.removeprefix("kit:")]
+        self._flush()
+
+
+def test_jsonl_connector_passes_conformance_kit_and_rejects_rows_without_acl(tmp_path):
+    f = tmp_path / "docs.jsonl"
+    f.write_text("", encoding="utf-8")
+    res = run_kit(lambda: registry.load("connector", "jsonl", path=str(f), source_name="kit"), JsonlFileDriver(f))
+    assert res.ok, res.failed
+    f.write_text(json.dumps({"id": "x", "text": "no acl"}) + "\n" + json.dumps({"id": "y", "text": "t", "acl": {}})
+                 + "\n", encoding="utf-8")
+    conn = registry.load("connector", "jsonl", path=str(f), source_name="kit")
+    recs = list(conn.sync(conn.streams()[0], None))
+    assert [type(r).__name__ for r in recs] == ["CursorCheckpoint"] and len(conn.errors) == 2

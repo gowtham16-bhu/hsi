@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -28,6 +28,7 @@ class Retrieved:
     passages: list[str]
     hits: list[Hit]
     latency_ms: float
+    scores: list[float] = field(default_factory=list)   # per returned passage, when the retriever has them
 
 
 def unpack(hits: Sequence[Hit], k: int) -> list[str]:
@@ -85,6 +86,16 @@ class ShortcutIndex:
             texts = [chain_text([by_id[pid] for pid in s.chain.passages]) for s in text_keyed]
             kvecs = self._encode_batched(texts)
             self._add([s.chain.passages for s in text_keyed], kvecs, [s.chain.level for s in text_keyed])
+        return self
+
+    def build_from_vectors(self, ids: Sequence[str], vecs: np.ndarray) -> ShortcutIndex:
+        """A passage-only index from stored vectors (row i is passage ids[i]); no encoding (A5 §2)."""
+        vecs = np.asarray(vecs, dtype=np.float32)
+        if len(ids) != len(vecs):
+            raise ValueError("ids and vectors differ in length")
+        self.raw_vecs = {pid: v for pid, v in zip(ids, vecs, strict=True)}
+        self.passage_vecs = dict(self.raw_vecs)
+        self._add([(pid,) for pid in ids], vecs, [0] * len(ids))
         return self
 
     def _add(self, entries: list[tuple[str, ...]], vecs: np.ndarray, levels: list[int]) -> None:

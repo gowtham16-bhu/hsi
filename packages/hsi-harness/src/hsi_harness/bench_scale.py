@@ -25,6 +25,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 from hsi_core import registry
+from hsi_core.build import GraphSection, build_compact
 from hsi_core.config import PluginSpec, config_hash, load_yaml
 from hsi_core.encoding import CachedEncoder
 from hsi_core.index import ShortcutIndex
@@ -33,7 +34,7 @@ from hsi_core.ppr import PPRConfig, PPRRetriever
 from hsi_core.push import LocalPushRetriever, PushConfig
 from hsi_core.transitions import LinearTransition
 from hsi_harness.datasets import load
-from hsi_harness.gate0 import GraphSection, SampleRef, build_compact
+from hsi_harness.gate0 import SampleRef
 
 
 class _Strict(BaseModel):

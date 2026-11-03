@@ -1,9 +1,11 @@
 """PostgreSQL metadata store. Schema migrations are plain SQL, applied in order and recorded."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from collections.abc import Iterable
+from datetime import UTC, datetime
 from importlib.resources import files
 from typing import Any
 
@@ -98,6 +100,63 @@ class PostgresStore:
         with self._conn.cursor() as cur:
             cur.execute(f"select count(*) from {SCHEMA}.{table} where corpus_id = %s", (corpus_id,))
             return int(cur.fetchone()[0])
+
+    def read_passages(self, corpus_id: str, ids: Iterable[str]) -> dict[str, dict[str, Any]]:
+        """Passage rows by id: doc_id, title, text, acl."""
+        ids = list(ids)
+        if not ids:
+            return {}
+        with self._conn.cursor() as cur:
+            cur.execute(f"select id, doc_id, title, text, acl from {SCHEMA}.passages "
+                        "where corpus_id = %s and id = any(%s)", (corpus_id, ids))
+            rows = {r[0]: {"doc_id": r[1], "title": r[2], "text": r[3], "acl": r[4]} for r in cur.fetchall()}
+        self._conn.commit()
+        return rows
+
+    def read_acls(self, corpus_id: str) -> dict[str, dict[str, Any]]:
+        """ACL of every passage of a corpus (loaded once by the retrieval service)."""
+        with self._conn.cursor() as cur:
+            cur.execute(f"select id, acl from {SCHEMA}.passages where corpus_id = %s", (corpus_id,))
+            out = {r[0]: r[1] for r in cur.fetchall()}
+        self._conn.commit()
+        return out
+
+    # audit (append-only, hash-chained) -----------------------------------------
+    @staticmethod
+    def _audit_hash(prev: str, entry: dict[str, Any]) -> str:
+        blob = json.dumps(entry, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256((prev + blob).encode("utf-8")).hexdigest()
+
+    def append_audit(self, index_id: str, principals: Iterable[str], question: str, passages: Iterable[str]) -> str:
+        entry = {"at": datetime.now(UTC).isoformat(), "index_id": index_id,
+                 "principals": sorted(principals), "question": question, "passages": list(passages)}
+        with self._conn.transaction(), self._conn.cursor() as cur:
+            cur.execute("select pg_advisory_xact_lock(hashtext('hsi.audit'))")
+            cur.execute(f"select hash from {SCHEMA}.audit order by seq desc limit 1")
+            row = cur.fetchone()
+            prev = row[0] if row else "0" * 64
+            h = self._audit_hash(prev, entry)
+            cur.execute(f"insert into {SCHEMA}.audit(at, index_id, principals, question, passages, prev_hash, hash) "
+                        "values (%s, %s, %s, %s, %s, %s, %s)",
+                        (entry["at"], index_id, json.dumps(entry["principals"]), question,
+                         json.dumps(entry["passages"]), prev, h))
+        return h
+
+    def verify_audit(self) -> int | None:
+        """Recompute the chain; return the seq of the first bad row, or None when intact."""
+        prev = "0" * 64
+        with self._conn.cursor() as cur:
+            cur.execute(f"select seq, at, index_id, principals, question, passages, prev_hash, hash "
+                        f"from {SCHEMA}.audit order by seq")
+            for seq, at, index_id, principals, question, passages, prev_hash, h in cur.fetchall():
+                entry = {"at": at.astimezone(UTC).isoformat(), "index_id": index_id, "principals": principals,
+                         "question": question, "passages": passages}
+                if prev_hash != prev or self._audit_hash(prev, entry) != h:
+                    self._conn.commit()
+                    return int(seq)
+                prev = h
+        self._conn.commit()
+        return None
 
     def delete_corpus(self, corpus_id: str) -> None:
         with self._conn.transaction(), self._conn.cursor() as cur:

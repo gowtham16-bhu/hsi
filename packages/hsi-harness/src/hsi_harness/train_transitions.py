@@ -15,13 +15,14 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 from hsi_core import registry
+from hsi_core.build import GraphSection, build_compact
 from hsi_core.config import PluginSpec, config_hash, load_yaml
 from hsi_core.encoding import CachedEncoder
 from hsi_core.index import ShortcutIndex
-from hsi_core.transitions import FEATURES, EdgeTable, fit_listwise, listwise_loss
+from hsi_core.transitions import FEATURES, edge_features, fit_listwise, listwise_loss
 from hsi_harness.bench_scale import PoolSource
 from hsi_harness.datasets import load
-from hsi_harness.gate0 import GraphSection, SampleRef, build_compact
+from hsi_harness.gate0 import SampleRef
 
 
 class TrainSection(BaseModel):
@@ -79,32 +80,27 @@ def run(cfg: TrainConfig) -> dict:
     pos = {pid: i for i, pid in enumerate(ids)}
     vecs = np.stack([dense.passage_vecs[p] for p in ids]).astype(np.float32)
     csr, _stats = build_compact(cfg.graph, passages, ids, vecs, vector_of=dense.raw_vecs.__getitem__)
-    table = EdgeTable(csr, ids, vecs)
-    by_src: dict[int, np.ndarray] = {}
-    order = np.argsort(table.src, kind="stable")
-    bounds = np.searchsorted(table.src[order], np.arange(len(ids) + 1))
-    for i in range(len(ids)):
-        if bounds[i + 1] > bounds[i]:
-            by_src[i] = order[bounds[i]:bounds[i + 1]]
     qvecs = enc.encode([q.question for q in ds.questions], "query")
     groups: list[tuple[np.ndarray, int, int]] = []        # (features, gold index, question index)
     reachable = transitions = 0
     for qi, (q, qv) in enumerate(zip(ds.questions, qvecs, strict=True)):
         if not q.ordered:
             continue
-        phi = None
+        in_q = None
+        q32 = np.asarray(qv, dtype=np.float32)
         for u, v in zip(q.gold, q.gold[1:], strict=False):
             transitions += 1
-            edges = by_src.get(pos[u])
-            if edges is None:
-                continue
-            hit = np.nonzero(table.dst[edges] == pos[v])[0]
-            if len(hit) == 0 or len(edges) < 2:
+            sl = csr.edges_of(pos[u])
+            dst = csr.dst[sl]
+            hit = np.nonzero(dst == pos[v])[0]
+            if len(hit) == 0 or len(dst) < 2:
                 continue
             reachable += 1
-            if phi is None:
-                phi = table.features(qv, q.question)
-            groups.append((phi[edges], int(hit[0]), qi))
+            if in_q is None:
+                in_q = csr.bridges_in(q.question)
+            # features of u's out-edges only: the same function the walks use (decision 0007)
+            phi = edge_features(csr, sl, (vecs[dst] @ q32).astype(np.float64), float(vecs[pos[u]] @ q32), in_q)
+            groups.append((phi, int(hit[0]), qi))
     rng = random.Random(cfg.training.seed)
     qids = sorted({g[2] for g in groups})
     rng.shuffle(qids)

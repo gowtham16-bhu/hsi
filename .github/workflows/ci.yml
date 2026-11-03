@@ -29,7 +29,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e packages/hsi-core -e packages/hsi-plugins-basic -e packages/hsi-plugins-faiss \
                       -e packages/hsi-plugins-postgres -e packages/hsi-harness \
-                      -e packages/hsi-connector-kit -e packages/hsi-plugins-osv pytest ruff import-linter
+                      -e packages/hsi-connector-kit -e packages/hsi-plugins-osv -e packages/hsi-service \
+                      pytest ruff import-linter
       - name: Lint
         run: ruff check .
       - name: Core independence

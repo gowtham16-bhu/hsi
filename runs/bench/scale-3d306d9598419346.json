@@ -1,0 +1,176 @@
+{
+  "kind": "bench-scale",
+  "config": {
+    "questions": {
+      "dataset": "musique",
+      "data_file": "data/musique/musique_ans_v1.0_train.jsonl"
+    },
+    "question_count": 200,
+    "seed": 7,
+    "exclude_samples": [
+      {
+        "seed": 0,
+        "size": 1000
+      },
+      {
+        "seed": 1,
+        "size": 2000
+      }
+    ],
+    "pool": [
+      {
+        "dataset": "musique",
+        "data_file": "data/musique/musique_ans_v1.0_train.jsonl"
+      },
+      {
+        "dataset": "2wiki",
+        "data_file": "data/2wiki/dev.json"
+      }
+    ],
+    "sizes": [
+      10000,
+      140000
+    ],
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 32,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/bench",
+    "graph": {
+      "fan_out": 128,
+      "hub_degree_cap": 200,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "hub_mode": "facets",
+      "facet_size": 50,
+      "facet_iterations": 20,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      },
+      "edge_scorer": null
+    },
+    "transition_model": "runs/models/transitions-musique-v5-140k-fan128.json",
+    "ppr": {
+      "seeds": 3,
+      "restart": 0.5,
+      "iterations": 50,
+      "tolerance": 1e-06,
+      "beta": 0.0,
+      "rank_by": "total",
+      "keep_seeds": 0
+    },
+    "push": {
+      "seeds": 3,
+      "restart": 0.5,
+      "epsilon": 0.0001,
+      "beta": 0.0,
+      "max_pushes": 100000
+    },
+    "global_ppr_max_size": 40000,
+    "k": 5
+  },
+  "config_hash": "3d306d9598419346",
+  "questions": 200,
+  "machine": "Linux-6.18.44-fc-v230-x86_64-with-glibc2.39",
+  "llm_calls": 0,
+  "rows": [
+    {
+      "passages": 10000,
+      "edges": 1018770,
+      "csr_bytes_per_edge": 24.140883614554806,
+      "build_s": {
+        "encode_and_index": 0.31503705599971,
+        "graph": 10.729336726999463
+      },
+      "peak_rss_mb": 1298.453125,
+      "pushes_per_query": {
+        "p50": 768.0,
+        "p95": 1066.5499999999997,
+        "max": 1188
+      },
+      "vectors_read_per_query": {
+        "p50": 7336.0,
+        "p95": 8504.15
+      },
+      "latency_ms": {
+        "seed_search": {
+          "p50": 3.6306844995124266,
+          "p95": 24.46667870044621
+        },
+        "push": {
+          "p50": 131.54319300065254,
+          "p95": 264.5063730989932
+        },
+        "global": {
+          "p50": 216.51252799983922,
+          "p95": 788.6570674510037
+        }
+      },
+      "passage_recall@5": {
+        "dense": 0.55875,
+        "push": 0.64875,
+        "global": 0.64875
+      }
+    },
+    {
+      "passages": 140000,
+      "edges": 16495864,
+      "csr_bytes_per_edge": 24.118054804525546,
+      "build_s": {
+        "encode_and_index": 3.2213764090010955,
+        "graph": 281.097122485
+      },
+      "peak_rss_mb": 3785.36328125,
+      "pushes_per_query": {
+        "p50": 782.0,
+        "p95": 1044.1999999999998,
+        "max": 1169
+      },
+      "vectors_read_per_query": {
+        "p50": 21999.5,
+        "p95": 31995.649999999998
+      },
+      "latency_ms": {
+        "seed_search": {
+          "p50": 13.879413500035298,
+          "p95": 18.55558009910964
+        },
+        "push": {
+          "p50": 188.3350475000043,
+          "p95": 326.0319294508917
+        },
+        "global": null
+      },
+      "passage_recall@5": {
+        "dense": 0.44833333333333336,
+        "push": 0.4745833333333333,
+        "global": null
+      }
+    }
+  ]
+}

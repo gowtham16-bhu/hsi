@@ -215,3 +215,25 @@ def test_learned_push_matches_learned_global_ppr(mini_musique):
         assert push.last_vectors_read <= len(mini_musique.passages)
     with pytest.raises(ValueError):
         push.retrieve_vec(qv, 4, 10)
+
+
+def test_push_with_visibility_mask_stays_inside_visible_passages(mini_musique):
+    """A5 §4: seeds, steps and results are restricted to visible passages; an all-true mask changes nothing."""
+    from hsi_core.push import LocalPushRetriever, PushConfig
+    enc = registry.load("encoder", "hashing", dim=512)
+    g = build_title_graph(mini_musique.passages)
+    dense = ShortcutIndex(enc, lambda: registry.load("vector_store", "faiss")).build(mini_musique.passages)
+    push = LocalPushRetriever(dense, g, PushConfig(seeds=2, restart=0.5, epsilon=1e-7, beta=5.0, max_pushes=100_000))
+    ids = push.g.ids
+    rng = np.random.default_rng(0)
+    for q in mini_musique.questions:
+        qv = enc.encode([q.question], "query")[0]
+        free = push.retrieve_vec(qv, 5, 10)
+        assert push.retrieve_vec(qv, 5, 10, visible=np.ones(len(ids), dtype=bool)).passages == free.passages
+        for _ in range(5):
+            mask = rng.random(len(ids)) < 0.6
+            r = push.retrieve_vec(qv, 5, 10, visible=mask)
+            assert all(mask[ids.index(p)] for p in r.passages)
+            assert all(mask[ids.index(h.passages[0])] for h in r.hits)
+    with pytest.raises(ValueError):
+        push.retrieve_vec(qv, 5, 10, visible=np.ones(3, dtype=bool))

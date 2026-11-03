@@ -5,13 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "hsi-plugins-basic"
 version = "0.1.0"
-description = "HSI basic plugins with no model downloads: feature-hashing encoder, capitalized-span mentions"
+description = "HSI basic plugins with no model downloads: hashing encoder, capitalized-span mentions, JSONL connector"
 requires-python = ">=3.11"
 dependencies = ["hsi-core", "numpy>=1.26"]
 
 [project.entry-points."hsi.plugins"]
 "encoder:hashing" = "hsi_plugins_basic:HashingEncoder"
 "mention_extractor:capitalized" = "hsi_plugins_basic.mentions:CapitalizedMentionExtractor"
+"connector:jsonl" = "hsi_plugins_basic.jsonl:JsonlConnector"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hsi_plugins_basic"]

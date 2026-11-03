@@ -177,3 +177,16 @@ new, pending the reading: (1) transitions learned listwise from gold chains with
 model-free name extractor instead of an NER model; (4) the scale study itself: whether LLM-free graph gains
 survive corpus growth (decisions 0013–0016), including the negative result so far. A head-to-head against
 SPRIG and LinearRAG on the same sets is required before a paper.
+
+**LinearRAG, from its public code** (github.com/DEEP-PolyU/LinearRAG, GPL-3.0; read 2026-11-03; paper text
+not reachable): spaCy transformer NER (`en_core_web_trf`); a passage–entity graph plus consecutive-passage
+edges, with no alias handling and no hub pruning; question-dependent propagation through question–sentence
+similarity with **hand-set thresholds tuned per dataset** (e.g. MuSiQue threshold 0.1, 2Wiki 0.4); then plain
+personalized PageRank (damping 0.5). Nothing is learned. Embedding model all-mpnet-base-v2. The license
+allows benchmarking but not copying its code into HSI. **HSI's learned listwise transitions remain distinct
+from it;** SPRIG and "Read the Route" are still unread.
+
+**Scale finding (decisions 0013–0016).** HSI's query cost stays flat with corpus size, but its recall gain
+over dense retrieval shrinks from about +9 points at 10K passages to +2.6 at 140K (bge-small, MuSiQue train
+questions, real distractors). It is not recovered by hub facets, larger candidate pools, or retraining the hop
+model at scale. Most likely cause: weaker seeds from the encoder. Any public claim must state this limit.
