@@ -1,0 +1,16 @@
+# Demo service (A5) for the index built by configs/demo/2wiki-index.yaml.
+index_dir: .indexes/demo-2wiki
+encoder:
+  plugin: onnx
+  options:
+    model: BAAI/bge-small-en-v1.5
+    onnx_file: onnx/model.onnx
+    max_seq_length: 512
+    batch_size: 32
+    query_instruction: "Represent this sentence for searching relevant passages: "   # from the model card
+vector_store: { plugin: faiss, options: {} }
+metadata_store: { plugin: postgres }      # reads HSI_PG_DSN
+push: { seeds: 3, restart: 0.5, epsilon: 1.0e-3, beta: 0.0, max_pushes: 100000 }
+max_k: 20
+mcp_principals: ["user:demo"]
+audit: true
