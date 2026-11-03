@@ -12,6 +12,8 @@ passage_template: "{title}: {text}"
 reader:
   model: Qwen/Qwen2.5-1.5B-Instruct
   max_new_tokens: 24
+  device: cpu
+  dtype: float32
   threads: 4
 normalization:                    # SQuAD v1.1 official answer normalization
   lowercase: true

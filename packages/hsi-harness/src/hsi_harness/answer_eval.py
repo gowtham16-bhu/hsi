@@ -16,7 +16,7 @@ import time
 import unicodedata
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -31,6 +31,8 @@ class _Strict(BaseModel):
 class ReaderSection(_Strict):
     model: str                       # Hugging Face id or local path of an instruction model
     max_new_tokens: int
+    device: str                      # "cpu", "mps" (Apple Silicon) or "cuda"
+    dtype: Literal["float32", "float16", "bfloat16"]
     threads: int | None = None
 
 
@@ -87,7 +89,8 @@ def run(cfg: AnswerEvalConfig) -> dict[str, Any]:
     aliases = {str(r[cfg.id_field]): list(r.get(cfg.aliases_field) or []) if cfg.aliases_field else [] for r in raw}
     questions = pq["questions"][: cfg.question_count]
     tok = AutoTokenizer.from_pretrained(cfg.reader.model)
-    model = AutoModelForCausalLM.from_pretrained(cfg.reader.model, torch_dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(cfg.reader.model, dtype=getattr(torch, cfg.reader.dtype))
+    model.to(cfg.reader.device)
     model.eval()
 
     per_system: dict[str, dict[str, list]] = {s: {"em": [], "f1": [], "answers": []} for s in cfg.systems}
@@ -102,7 +105,7 @@ def run(cfg: AnswerEvalConfig) -> dict[str, Any]:
                         {"role": "user", "content": cfg.user_template.format(passages=passages,
                                                                              question=q["question"])}]
             inputs = tok.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt",
-                                             return_dict=True)
+                                             return_dict=True).to(cfg.reader.device)
             with torch.no_grad():
                 out = model.generate(**inputs, max_new_tokens=cfg.reader.max_new_tokens, do_sample=False)
             answer = tok.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()

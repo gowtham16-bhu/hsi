@@ -25,9 +25,12 @@ def _resolve(model: str, filename: str) -> str:
 
 class OnnxEncoder:
     def __init__(self, *, model: str, onnx_file: str, max_seq_length: int, batch_size: int, query_instruction: str,
-                 threads: int | None = None, pooling: Literal["cls", "mean"] | None = None) -> None:
+                 threads: int | None = None, pooling: Literal["cls", "mean"] | None = None,
+                 providers: list[str] | None = None) -> None:
         """`query_instruction`: the prefix the model card prescribes for queries ("" if none).
-        `pooling`: read from the model's 1_Pooling/config.json unless given here."""
+        `pooling`: read from the model's 1_Pooling/config.json unless given here.
+        `providers`: ONNX Runtime execution providers in priority order (e.g. CoreMLExecutionProvider on a
+        Mac); CPU when not given. Providers the installed runtime lacks are refused, not silently skipped."""
         self._tok = Tokenizer.from_file(_resolve(model, "tokenizer.json"))
         self._tok.enable_truncation(max_length=max_seq_length)
         with open(_resolve(model, "tokenizer_config.json"), encoding="utf-8") as f:
@@ -41,8 +44,11 @@ class OnnxEncoder:
         opts = ort.SessionOptions()
         if threads:
             opts.intra_op_num_threads = threads
-        self._sess = ort.InferenceSession(_resolve(model, onnx_file), opts,
-                                          providers=["CPUExecutionProvider"])
+        chosen = providers or ["CPUExecutionProvider"]
+        missing = [p for p in chosen if p not in ort.get_available_providers()]
+        if missing:
+            raise ValueError(f"ONNX Runtime here lacks providers {missing}; available: {ort.get_available_providers()}")
+        self._sess = ort.InferenceSession(_resolve(model, onnx_file), opts, providers=chosen)
         self._inputs = {i.name for i in self._sess.get_inputs()}
         if pooling is None:
             with open(_resolve(model, "1_Pooling/config.json"), encoding="utf-8") as f:

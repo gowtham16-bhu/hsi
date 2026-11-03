@@ -39,3 +39,15 @@ Decision 0014's diagnosis: misses with no gold seed nearly double from 10K to 14
   normalization).
 - **Pre-registered reading:** better passages give better answers if HSI − dense token F1 has a 95%
   bootstrap interval above 0 on 2Wiki. MuSiQue is reported either way.
+
+## Amendment (2026-11-03, before any E2, E3 or E1 result): where the experiments run
+- **Speed measured in the cloud container (4 CPUs):** the E3 reader took 889 s for 3 questions × 2 systems
+  while E2 shared the CPU, so 200 questions per dataset would take well over 10 hours. Those 3 smoke-test
+  answers were seen (HSI's passages gave 2 correct answers, dense 0); they are a pipeline check and are not
+  part of any result.
+- **Change:** E2 and E3 may run on the owner's Apple Silicon Mac. The device is part of each config
+  (`encoder.options.device: mps` for the sentence-transformers encoder, `reader.device` and `reader.dtype`
+  for the reader), so it is recorded in every report. Nothing else changes: same questions, systems,
+  prompt, metrics and readings. Results from a different device are reported as such.
+- **If the run stays on CPU,** E3 uses the first N questions per dataset, N chosen from the measured
+  uncontended speed to fit about 3 hours, and stated in the report.

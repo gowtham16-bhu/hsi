@@ -1,0 +1,36 @@
+# Decision 0017 E3 on an Apple Silicon Mac: configs/compare/answers-2wiki.yaml with the reader on mps.
+per_question_file: runs/compare-mac/2wiki-6e9dbf410bc22158-per-question.json
+data_file: data/hipporag2/2wikimultihopqa.json
+id_field: _id
+aliases_field: null
+systems:
+- dense
+- system-A
+question_count: 200
+k: 5
+system_prompt: You answer questions using only the given passages. Reply with the answer only, in a few words.
+user_template: 'Passages:
+
+  {passages}
+
+
+  Question: {question}
+
+  Answer:'
+passage_template: '{title}: {text}'
+reader:
+  model: Qwen/Qwen2.5-1.5B-Instruct
+  max_new_tokens: 24
+  device: mps
+  dtype: float16
+  threads: null
+normalization:
+  lowercase: true
+  strip_punctuation: true
+  remove_words:
+  - a
+  - an
+  - the
+bootstrap: 1000
+seed: 0
+out_dir: runs/compare-mac
