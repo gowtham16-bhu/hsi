@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,6 +7,7 @@ name = "hsi-plugins-postgres"
 version = "0.1.0"
 description = "HSI metadata store plugin: PostgreSQL (passages, graph, shortcuts, run records)"
 requires-python = ">=3.11"
+license = "Apache-2.0"
 dependencies = ["hsi-core", "psycopg[binary]>=3.2"]
 
 [project.entry-points."hsi.plugins"]

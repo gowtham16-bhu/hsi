@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,6 +7,7 @@ name = "hsi-plugins-faiss"
 version = "0.1.0"
 description = "HSI vector store plugin: FAISS in-process exact inner-product search"
 requires-python = ">=3.11"
+license = "Apache-2.0"
 dependencies = ["hsi-core", "faiss-cpu>=1.8", "numpy>=1.26"]
 
 [project.entry-points."hsi.plugins"]

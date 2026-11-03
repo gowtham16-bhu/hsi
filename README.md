@@ -69,5 +69,22 @@ hsi-gate0 --config configs/gate0/musique.yaml
 | `packages/hsi-plugins-osv` | Connector: OSV advisories from a local dump (documents, alias/affects/fixed-in facts, tombstones) |
 | `packages/hsi-connector-kit` | Conformance kit every connector must pass before it can be enabled |
 
-## Status
-Gate 0 code is built and tested. The Gate 0 measurement on MuSiQue and 2Wiki has not run yet: it needs the encoder weights and datasets. No number in the specs is a measured result yet.
+## Status (2026-11-03)
+All numbers below are measured and recorded in `specs/decisions/` and `runs/`; failures are recorded too.
+
+- **Final pre-registered test** (decision 0011; HippoRAG 2's evaluation sets, 1,000 questions each, bge-large,
+  zero LLM calls): gold-passage recall@5 over dense retrieval with the same encoder: **+6.9** on MuSiQue
+  (63.4 vs 56.5) and **+19.4** on 2Wiki (92.1 vs 72.7). HippoRAG 2 reports 74.7 and 90.4 with a 7B encoder.
+- **Speed** (decision 0012): local push with learned transitions matches the global walk's recall at
+  12.5 ms instead of 83 ms; work per query stays flat as the corpus grows.
+- **Scale** (decisions 0013–0016): the streaming builder handles 140K passages in 3.7 GB, but the recall gain
+  over dense shrinks from about +9 (10K passages) to +2.6 (140K). Hub facets, larger candidate pools and
+  retraining did not recover it; the encoder is the remaining suspect. Stated as a limit.
+- **Prior work** (thesis, novelty audit): LLM-free graph retrieval with PageRank is already published
+  (SPRIG, LinearRAG, NoLLMRAG). HSI's distinct parts are the learned listwise transitions, learned push,
+  a model-free name extractor, and the scale study.
+- **Product** (A5): `hsi-index build` and `hsi-serve` (REST and MCP), permission-aware walk, hash-chained
+  audit log, JSONL connector. Demo: `configs/demo/`.
+
+## License
+Apache License 2.0. See `LICENSE` and `NOTICE`.

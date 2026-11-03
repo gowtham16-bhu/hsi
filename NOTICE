@@ -1,0 +1,9 @@
+HSI: LLM-free multi-hop retrieval engine
+Copyright 2026 The HSI authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It depends on third-party open-source packages under their own licenses (MIT, BSD, Apache-2.0, and
+LGPL-3.0 for the psycopg PostgreSQL driver, used unmodified). Embedding models (e.g. BAAI bge) and
+evaluation datasets (MuSiQue, 2WikiMultiHopQA, HippoRAG 2 releases) are downloaded separately, are not
+part of this repository, and remain under their own licenses.

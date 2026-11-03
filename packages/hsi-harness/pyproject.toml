@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,6 +7,7 @@ name = "hsi-harness"
 version = "0.1.0"
 description = "HSI evaluation harness: dataset loaders, gate runners, reports"
 requires-python = ">=3.11"
+license = "Apache-2.0"
 dependencies = ["hsi-core", "numpy>=1.26", "pydantic>=2.6", "pyyaml>=6.0"]
 
 [project.scripts]
