@@ -141,14 +141,17 @@ checked against the paper's own table.
 
 Cost stays flat as the collection grows, but the quality gain shrinks. Splitting common names into
 facets, storing more links (the last row) and retraining the hop model at scale did not recover it.
-The most likely remaining cause is the encoder, which finds the right first passage less often among
-many distractors.
+
+A stronger encoder does not recover it either (decision 0017): with `bge-large`, HSI reaches 71.0% at
+10K and 62.2% at 40K passages, and the right starting passage is found far more often, but HSI's gain
+over vector search falls from +7.9 to +4.6. The open cause is in the walk itself: as the collection grows,
+the right neighbour competes with many similar ones.
 
 ## 4. Where HSI does not help (yet)
 
 | Situation | Why |
 |---|---|
-| Large collections (≥ 140K passages) | The gain over vector search shrinks to about 2.6 points (see above) |
+| Large collections | The gain over vector search shrinks as the collection grows: +0.2 to +2.6 points at 140K (see above) |
 | Questions one document can answer | There is nothing to link; the cost or benefit there has not been measured yet |
 | Documents connected by ideas, not names | It links names and titles, not concepts such as "photosynthesis" |
 | Lowercase names (`payments-api`, `log4j`, code identifiers) | Today's name finder relies on capitalization; only titles would link. A case-independent version is planned |
@@ -341,7 +344,7 @@ name-recognition model; and a scale study that reports where the gain fades. See
 
 ## 11. Roadmap
 
-- Find why the gain shrinks on large collections, starting with stronger embedding models
+- Find why the gain shrinks on large collections (not mainly the encoder; next: competition among neighbours in the walk)
 - Case-independent name finding (lowercase names, identifiers, languages without capital letters)
 - Measure single-document questions and end-to-end answer quality with an LLM reader
 - Code plugins: identifiers from syntax trees, one passage per function
