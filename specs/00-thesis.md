@@ -194,3 +194,7 @@ model at scale. Most likely cause: weaker seeds from the encoder. Any public cla
 **Name (2026-11-03).** HSI now stands for *Hop-Steered Index*: an index of links between documents, walked one
 hop at a time, each hop steered by the learned hop model (decision 0007). The original expansion, *Hierarchical
 Shortcut Index*, described the withdrawn RQ1 idea and is kept only as history.
+
+**Encoder test at scale (decision 0017 E2).** A stronger encoder (bge-large) raises both dense and HSI
+(HSI 55.3 → 62.2 at 40K) and fixes most seed misses, but HSI's gain over dense shrinks further (+6.8 → +4.6).
+The shrinking gain is not mainly an encoder problem; the open cause is competition among neighbours in the walk.

@@ -51,3 +51,25 @@ Decision 0014's diagnosis: misses with no gold seed nearly double from 10K to 14
   prompt, metrics and readings. Results from a different device are reported as such.
 - **If the run stays on CPU,** E3 uses the first N questions per dataset, N chosen from the measured
   uncontended speed to fit about 3 hours, and stated in the report.
+
+## Outcome E2 (2026-11-03, cloud CPU): reading met on its second condition only; interpretation: not mainly the encoder
+Run `runs/bench/scale-8554c223c1cd44d8.json` (`configs/bench/scale-large.yaml`); bge-small reference from
+`runs/bench/` facets-50 run (decision 0014). Seed shares computed on the same corpora (cached vectors).
+
+| Encoder | Passages | Questions with a gold seed | Dense GP@5 | HSI GP@5 | Gain |
+|---|---|---|---|---|---|
+| bge-small | 10K | 85.5% | 55.9 | 64.8 | +9.0 |
+| bge-small | 40K | 82.5% | 48.5 | 55.3 | +6.8 |
+| bge-large | 10K | 91.0% | 63.0 | 71.0 | +7.9 |
+| bge-large | 40K | 89.0% | 57.6 | 62.2 | +4.6 |
+
+- **Condition 1 (gain at 40K ≥ +8.8 with bge-large):** not met; the gain is +4.6, smaller than bge-small's +6.8.
+- **Condition 2 (gold-seed share at 40K up ≥ 5 points):** met; +6.5 points (82.5% → 89.0%).
+- **Interpretation.** The rule said "either condition", so it is formally met. The substance points the other
+  way: the stronger encoder fixes the seeds and raises both systems (HSI 55.3 → 62.2), but the walk's added
+  value shrinks (+6.8 → +4.6), and it shrinks faster from 10K to 40K (−3.3 vs −2.2). The scale problem is
+  therefore **not mainly the encoder**. The "either" wording was too lenient; future rules state the
+  condition that the claim rests on. Next candidates: the walk spreads probability over more competing
+  neighbours as N grows (decision 0014's third cause), and the hop model's features do not separate the
+  right neighbour from many similar ones.
+- Absolute result worth keeping: HSI with bge-large reaches 71.0% (10K) and 62.2% (40K).
