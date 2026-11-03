@@ -1,14 +1,17 @@
-# Datasets for Gate 0
+# Datasets
+
+Run `scripts/get-datasets.sh` to download everything below into `data/` (needs the `hf` command).
 
 Place files under `data/` (ignored by git). Licenses: MuSiQue CC BY 4.0, 2WikiMultiHopQA Apache-2.0, HotpotQA CC BY-SA 4.0.
 
-| Dataset | File the loader expects | Source |
-|---|---|---|
-| MuSiQue | `data/musique/musique_ans_v1.0_dev.jsonl` | github.com/StonyBrookNLP/musique (download script) |
-| 2WikiMultiHopQA | `data/2wiki/dev.json` | github.com/Alab-NII/2wikimultihop (data link in README) |
-| HotpotQA | `data/hotpotqa/hotpot_dev_distractor_v1.json` | hotpotqa.github.io |
+| Dataset | Files | Source used here | Original |
+|---|---|---|---|
+| MuSiQue | `data/musique/musique_ans_v1.0_dev.jsonl`, `musique_ans_v1.0_train.jsonl` | Hugging Face `dgslibisey/MuSiQue` | github.com/StonyBrookNLP/musique |
+| 2WikiMultiHopQA | `data/2wiki/dev.json` | Hugging Face `voidful/2WikiMultiHopQA` | github.com/Alab-NII/2wikimultihop |
+| HippoRAG 2 evaluation sets (final test) | `data/hipporag2/{musique,2wikimultihopqa}{,_corpus}.json` | Hugging Face `osunlp/HippoRAG_2` | the HippoRAG 2 release |
+| HotpotQA (not used yet) | `data/hotpotqa/hotpot_dev_distractor_v1.json` | — | hotpotqa.github.io |
 
-The encoder weights (`BAAI/bge-small-en-v1.5`) download from Hugging Face on first use. In an air-gapped
+The encoder weights (`BAAI/bge-small-en-v1.5`, `bge-large-en-v1.5`) download from Hugging Face on first use. In an air-gapped
 setup, copy the model directory to the machine and set `encoder.options.model` to its local path.
 
 ## Protocol
