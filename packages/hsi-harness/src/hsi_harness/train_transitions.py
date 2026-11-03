@@ -9,6 +9,7 @@ import json
 import random
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict
@@ -18,8 +19,9 @@ from hsi_core.config import PluginSpec, config_hash, load_yaml
 from hsi_core.encoding import CachedEncoder
 from hsi_core.index import ShortcutIndex
 from hsi_core.transitions import FEATURES, EdgeTable, fit_listwise, listwise_loss
+from hsi_harness.bench_scale import PoolSource
 from hsi_harness.datasets import load
-from hsi_harness.gate0 import GraphSection, SampleRef, build_graph
+from hsi_harness.gate0 import GraphSection, SampleRef, build_compact
 
 
 class TrainSection(BaseModel):
@@ -45,6 +47,8 @@ class TrainConfig(BaseModel):
     graph: GraphSection
     training: TrainSection
     output: str
+    distractors: list[PoolSource] = []   # decision 0016: train on a graph as large as the one served
+    corpus_size: int | None = None       # with distractors: total passages (questions' own + seeded sample)
 
 
 def run(cfg: TrainConfig) -> dict:
@@ -53,13 +57,29 @@ def run(cfg: TrainConfig) -> dict:
         exclude = {q.id for q in load(cfg.dataset, cfg.data_file, cfg.exclude_sample.size,
                                       cfg.exclude_sample.seed).questions}
     ds = load(cfg.dataset, cfg.data_file, cfg.sample_size, cfg.seed, exclude=exclude)
+    passages = list(ds.passages)
+    if cfg.distractors:
+        if cfg.corpus_size is None:
+            raise ValueError("distractors need corpus_size")
+        own = {p.id for p in passages}
+        pool: dict[str, Any] = {}
+        for src in cfg.distractors:
+            for p in load(src.dataset, src.data_file, None, cfg.seed).passages:
+                if p.id not in own:
+                    pool.setdefault(p.id, p)
+        order = sorted(pool)
+        random.Random(cfg.seed).shuffle(order)
+        if cfg.corpus_size - len(passages) > len(order):
+            raise ValueError("corpus_size exceeds the passages available")
+        passages += [pool[i] for i in order[: cfg.corpus_size - len(passages)]]
     enc = CachedEncoder(registry.load("encoder", cfg.encoder.plugin, **cfg.encoder.options), cfg.cache_dir)
     dense = ShortcutIndex(enc, lambda: registry.load("vector_store", cfg.vector_store.plugin,
-                                                     **cfg.vector_store.options)).build(ds.passages)
-    graph = build_graph(cfg.graph, ds.passages, vector_of=dense.raw_vecs.__getitem__)
+                                                     **cfg.vector_store.options)).build(passages)
     ids = [e[0] for e in dense.entries]
     pos = {pid: i for i, pid in enumerate(ids)}
-    table = EdgeTable(graph, ids, np.stack([dense.passage_vecs[p] for p in ids]).astype(np.float32))
+    vecs = np.stack([dense.passage_vecs[p] for p in ids]).astype(np.float32)
+    csr, _stats = build_compact(cfg.graph, passages, ids, vecs, vector_of=dense.raw_vecs.__getitem__)
+    table = EdgeTable(csr, ids, vecs)
     by_src: dict[int, np.ndarray] = {}
     order = np.argsort(table.src, kind="stable")
     bounds = np.searchsorted(table.src[order], np.arange(len(ids) + 1))
@@ -99,7 +119,8 @@ def run(cfg: TrainConfig) -> dict:
                               for g, y in val])) if val else float("nan")
     tr_ce, tr_acc = listwise_loss(model, train)
     va_ce, va_acc = listwise_loss(model, val) if val else (float("nan"), float("nan"))
-    meta = {"config_hash": config_hash(cfg), "questions": len(ds.questions), "gold_transitions": transitions,
+    meta = {"config_hash": config_hash(cfg), "questions": len(ds.questions), "corpus_passages": len(passages),
+            "gold_transitions": transitions,
             "reachable_in_capped_graph": reachable, "train_groups": len(train), "validation_groups": len(val),
             "train": {"cross_entropy": tr_ce, "top1": tr_acc},
             "validation": {"cross_entropy": va_ce, "top1": va_acc, "rule_based_top1": rule_acc},
