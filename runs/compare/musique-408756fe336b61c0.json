@@ -1,0 +1,464 @@
+{
+  "kind": "gate0",
+  "config": {
+    "dataset": "musique",
+    "data_file": "data/hipporag2/musique.json",
+    "sample_size": null,
+    "seed": 0,
+    "exclude_sample": null,
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-large-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 8,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "metadata_store": {
+      "plugin": "postgres",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/compare",
+    "graph": {
+      "fan_out": 32,
+      "hub_degree_cap": 200,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "hub_mode": "drop",
+      "facet_size": null,
+      "facet_iterations": null,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      },
+      "edge_scorer": null
+    },
+    "chains": {
+      "max_passages": 2,
+      "beam_level2": 3,
+      "beam_level3": 2,
+      "budget_ratio": null,
+      "key_mode": "mean"
+    },
+    "passage_indexes": {},
+    "systems": [
+      {
+        "name": "dense",
+        "kind": "dense",
+        "index": "passages",
+        "options": {}
+      },
+      {
+        "name": "system-A",
+        "kind": "ppr",
+        "index": "passages",
+        "options": {
+          "seeds": 3,
+          "restart": 0.5,
+          "iterations": 50,
+          "tolerance": 1e-06,
+          "beta": 0.0,
+          "rank_by": "total",
+          "keep_seeds": 0,
+          "transition_model": "runs/models/transitions-musique-v2-fan32.json"
+        }
+      }
+    ],
+    "top_k_hits": 50,
+    "passage_budgets": [
+      5,
+      10
+    ],
+    "bootstrap": 1000,
+    "decision": null,
+    "save_per_question": true
+  },
+  "config_hash": "408756fe336b61c0",
+  "code_version": "478229e-dirty",
+  "data_hash": "98ed4e21d3076532f6388d42320fb809599c63a0d8dffca8ece5e41922be6b46",
+  "encoder": "onnx:BAAI/bge-large-en-v1.5:512:cls",
+  "dataset": {
+    "name": "musique",
+    "questions": 1000,
+    "passages": 11655,
+    "by_hop": {
+      "2": 518,
+      "3": 316,
+      "4": 166
+    },
+    "excluded_questions": 0
+  },
+  "graph": {
+    "passages": 11655,
+    "entities": 53480,
+    "entities_with_anchor": 9837,
+    "raw_edges": 2187270,
+    "capped_edges": 330327,
+    "hubs": 31,
+    "capped_co_mention": 280681,
+    "capped_mention": 49646,
+    "config": {
+      "fan_out": 32,
+      "hub_degree_cap": 200,
+      "min_title_chars": 3,
+      "bidirectional": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention": true,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "hub_mode": "drop",
+      "facet_size": null,
+      "facet_iterations": null
+    }
+  },
+  "chains": {
+    "candidates_by_level": {},
+    "stored": 0
+  },
+  "index_entries": {
+    "passages": 11655,
+    "shortcuts": 0
+  },
+  "build_seconds": {
+    "graph_and_chains": 15.775338027000544,
+    "passage_index": 0.8314574500000163,
+    "shortcut_index": 0.0
+  },
+  "llm_calls": 0,
+  "recall": {
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.233,
+          "low": 0.207,
+          "high": 0.258,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.338,
+          "low": 0.31,
+          "high": 0.365025,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.39768339768339767,
+          "low": 0.3532818532818533,
+          "high": 0.4362934362934363,
+          "n": 518
+        },
+        "r@10": {
+          "mean": 0.5193050193050193,
+          "low": 0.47678571428571426,
+          "high": 0.5598455598455598,
+          "n": 518
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.08544303797468354,
+          "low": 0.056962025316455694,
+          "high": 0.11708860759493671,
+          "n": 316
+        },
+        "r@10": {
+          "mean": 0.21518987341772153,
+          "low": 0.17405063291139242,
+          "high": 0.25949367088607594,
+          "n": 316
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "n": 166
+        },
+        "r@10": {
+          "mean": 0.006024096385542169,
+          "low": 0.0,
+          "high": 0.018072289156626505,
+          "n": 166
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.056016597510373446,
+          "low": 0.03734439834024896,
+          "high": 0.07883817427385892,
+          "n": 482
+        },
+        "r@10": {
+          "mean": 0.14315352697095435,
+          "low": 0.11203319502074689,
+          "high": 0.17634854771784234,
+          "n": 482
+        }
+      }
+    },
+    "system-A": {
+      "all": {
+        "r@5": {
+          "mean": 0.371,
+          "low": 0.337,
+          "high": 0.401,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.481,
+          "low": 0.448,
+          "high": 0.512,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.6312741312741312,
+          "low": 0.5887548262548263,
+          "high": 0.6718146718146718,
+          "n": 518
+        },
+        "r@10": {
+          "mean": 0.750965250965251,
+          "low": 0.7142857142857143,
+          "high": 0.7857142857142857,
+          "n": 518
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.12658227848101267,
+          "low": 0.09177215189873418,
+          "high": 0.16139240506329114,
+          "n": 316
+        },
+        "r@10": {
+          "mean": 0.2626582278481013,
+          "low": 0.2182753164556962,
+          "high": 0.31329113924050633,
+          "n": 316
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.024096385542168676,
+          "low": 0.006024096385542169,
+          "high": 0.04819277108433735,
+          "n": 166
+        },
+        "r@10": {
+          "mean": 0.05421686746987952,
+          "low": 0.024096385542168676,
+          "high": 0.09036144578313253,
+          "n": 166
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.0912863070539419,
+          "low": 0.06639004149377593,
+          "high": 0.11825726141078838,
+          "n": 482
+        },
+        "r@10": {
+          "mean": 0.1908713692946058,
+          "low": 0.15767634854771784,
+          "high": 0.22614107883817428,
+          "n": 482
+        }
+      }
+    }
+  },
+  "passage_recall": {
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.5651666666666667,
+          "low": 0.547,
+          "high": 0.5833354166666667,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.6525833333333333,
+          "low": 0.6352479166666667,
+          "high": 0.6695208333333333,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.666023166023166,
+          "low": 0.638996138996139,
+          "high": 0.6891891891891891,
+          "n": 518
+        },
+        "r@10": {
+          "mean": 0.7432432432432432,
+          "low": 0.7200772200772201,
+          "high": 0.7654440154440154,
+          "n": 518
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.5369198312236287,
+          "low": 0.5116033755274262,
+          "high": 0.5622362869198312,
+          "n": 316
+        },
+        "r@10": {
+          "mean": 0.6402953586497889,
+          "low": 0.6128691983122363,
+          "high": 0.6666930379746836,
+          "n": 316
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.3042168674698795,
+          "low": 0.28012048192771083,
+          "high": 0.3313253012048193,
+          "n": 166
+        },
+        "r@10": {
+          "mean": 0.3930722891566265,
+          "low": 0.36291415662650606,
+          "high": 0.42323042168674696,
+          "n": 166
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.456777316735823,
+          "low": 0.43603042876901804,
+          "high": 0.4789073305670816,
+          "n": 482
+        },
+        "r@10": {
+          "mean": 0.5551521438450898,
+          "low": 0.5330221300138313,
+          "high": 0.5771092669432918,
+          "n": 482
+        }
+      }
+    },
+    "system-A": {
+      "all": {
+        "r@5": {
+          "mean": 0.6344166666666667,
+          "low": 0.6129979166666667,
+          "high": 0.6552541666666667,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.7131666666666666,
+          "low": 0.69199375,
+          "high": 0.7320875,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.7818532818532818,
+          "low": 0.7557915057915058,
+          "high": 0.8079150579150579,
+          "n": 518
+        },
+        "r@10": {
+          "mean": 0.8513513513513513,
+          "low": 0.8281853281853282,
+          "high": 0.8735521235521235,
+          "n": 518
+        }
+      },
+      "3": {
+        "r@5": {
+          "mean": 0.5464135021097047,
+          "low": 0.5179324894514769,
+          "high": 0.5749208860759493,
+          "n": 316
+        },
+        "r@10": {
+          "mean": 0.6445147679324894,
+          "low": 0.6149789029535865,
+          "high": 0.6772415611814345,
+          "n": 316
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.34186746987951805,
+          "low": 0.3117469879518072,
+          "high": 0.37801204819277107,
+          "n": 166
+        },
+        "r@10": {
+          "mean": 0.4126506024096386,
+          "low": 0.37349397590361444,
+          "high": 0.4503012048192771,
+          "n": 166
+        }
+      },
+      "3+4": {
+        "r@5": {
+          "mean": 0.4759681881051175,
+          "low": 0.45141338174273854,
+          "high": 0.5005316390041494,
+          "n": 482
+        },
+        "r@10": {
+          "mean": 0.5646611341632087,
+          "low": 0.5383774204702628,
+          "high": 0.5916320885200553,
+          "n": 482
+        }
+      }
+    }
+  },
+  "comparisons": {},
+  "latency_ms": {
+    "dense": {
+      "p50": 25.431394500174065,
+      "p95": 30.506249550126086
+    },
+    "system-A": {
+      "p50": 98.20728049999161,
+      "p95": 129.81470025001727
+    }
+  },
+  "ann_calls_per_question": {},
+  "pushes_per_question": {},
+  "waterfall": {},
+  "encoder_cache": {
+    "hits": 12655,
+    "misses": 0
+  },
+  "decision": null,
+  "total_seconds": 155.78007357799925,
+  "run_id": "1342e6c9-5d46-461e-bbfb-c5ac06258698",
+  "corpus_id": "musique-nNone-s0-98ed4e21"
+}

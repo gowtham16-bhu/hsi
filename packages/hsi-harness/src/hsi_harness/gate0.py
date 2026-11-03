@@ -106,6 +106,7 @@ class Gate0Config(_Strict):
     passage_budgets: list[int]
     bootstrap: int
     decision: DecisionRule | None = None
+    save_per_question: bool = False     # decision 0017: write each question's ranked passages too
 
 
 def _code_version() -> str:
@@ -370,6 +371,13 @@ def run(cfg: Gate0Config) -> dict[str, Any]:
     (out_dir / f"{stem}.json").write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
     (out_dir / f"{stem}.md").write_text(render_markdown(report), encoding="utf-8")
     report["paths"] = {"json": str(out_dir / f"{stem}.json"), "markdown": str(out_dir / f"{stem}.md")}
+    if cfg.save_per_question:
+        rows = [{"id": q.id, "question": q.question, "answer": q.answer, "hops": q.hops, "gold": list(q.gold),
+                 "results": {n: results[n][i] for n in names}} for i, q in enumerate(ds.questions)]
+        pq = out_dir / f"{stem}-per-question.json"
+        pq.write_text(json.dumps({"config_hash": report["config_hash"], "passages": {
+            p.id: {"title": p.title, "text": p.text} for p in passages}, "questions": rows}), encoding="utf-8")
+        report["paths"]["per_question"] = str(pq)
     return report
 
 

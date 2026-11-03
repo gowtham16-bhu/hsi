@@ -10,3 +10,4 @@ __pycache__/
 .ruff_cache/
 .indexes/
 hsi-git-history.bundle
+runs/**/*-per-question.json

@@ -15,6 +15,7 @@ hsi-gate0 = "hsi_harness.cli:main"
 hsi-train-transitions = "hsi_harness.train_transitions:main"
 hsi-train-edges = "hsi_harness.train_edges:main"
 hsi-bench-scale = "hsi_harness.bench_scale:main"
+hsi-answer-eval = "hsi_harness.answer_eval:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hsi_harness"]

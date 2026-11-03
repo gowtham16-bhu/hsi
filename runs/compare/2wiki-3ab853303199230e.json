@@ -1,0 +1,351 @@
+{
+  "kind": "gate0",
+  "config": {
+    "dataset": "2wiki",
+    "data_file": "data/hipporag2/2wikimultihopqa.json",
+    "sample_size": null,
+    "seed": 0,
+    "exclude_sample": null,
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-large-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 8,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "metadata_store": {
+      "plugin": "postgres",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/compare",
+    "graph": {
+      "fan_out": 32,
+      "hub_degree_cap": 200,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "hub_mode": "drop",
+      "facet_size": null,
+      "facet_iterations": null,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      },
+      "edge_scorer": null
+    },
+    "chains": {
+      "max_passages": 2,
+      "beam_level2": 3,
+      "beam_level3": 2,
+      "budget_ratio": null,
+      "key_mode": "mean"
+    },
+    "passage_indexes": {},
+    "systems": [
+      {
+        "name": "dense",
+        "kind": "dense",
+        "index": "passages",
+        "options": {}
+      },
+      {
+        "name": "system-A",
+        "kind": "ppr",
+        "index": "passages",
+        "options": {
+          "seeds": 3,
+          "restart": 0.5,
+          "iterations": 50,
+          "tolerance": 1e-06,
+          "beta": 0.0,
+          "rank_by": "total",
+          "keep_seeds": 0,
+          "transition_model": "runs/models/transitions-musique-v2-fan32.json"
+        }
+      }
+    ],
+    "top_k_hits": 50,
+    "passage_budgets": [
+      5,
+      10
+    ],
+    "bootstrap": 1000,
+    "decision": null,
+    "save_per_question": true
+  },
+  "config_hash": "3ab853303199230e",
+  "code_version": "478229e-dirty",
+  "data_hash": "895cba294064df0c3302c76847b1fc08d99b5619f7663dfaa3b65cd780f1cac4",
+  "encoder": "onnx:BAAI/bge-large-en-v1.5:512:cls",
+  "dataset": {
+    "name": "2wiki",
+    "questions": 1000,
+    "passages": 6120,
+    "by_hop": {
+      "2": 765,
+      "4": 235
+    },
+    "excluded_questions": 0
+  },
+  "graph": {
+    "passages": 6120,
+    "entities": 34665,
+    "entities_with_anchor": 6117,
+    "raw_edges": 720576,
+    "capped_edges": 145689,
+    "hubs": 22,
+    "capped_co_mention": 141052,
+    "capped_mention": 4637,
+    "config": {
+      "fan_out": 32,
+      "hub_degree_cap": 200,
+      "min_title_chars": 3,
+      "bidirectional": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention": true,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "hub_mode": "drop",
+      "facet_size": null,
+      "facet_iterations": null
+    }
+  },
+  "chains": {
+    "candidates_by_level": {},
+    "stored": 0
+  },
+  "index_entries": {
+    "passages": 6120,
+    "shortcuts": 0
+  },
+  "build_seconds": {
+    "graph_and_chains": 7.660489816000336,
+    "passage_index": 0.5747261759997855,
+    "shortcut_index": 0.0
+  },
+  "llm_calls": 0,
+  "recall": {
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.437,
+          "low": 0.407,
+          "high": 0.468,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.51,
+          "low": 0.478,
+          "high": 0.542,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.5686274509803921,
+          "low": 0.5333333333333333,
+          "high": 0.6039215686274509,
+          "n": 765
+        },
+        "r@10": {
+          "mean": 0.6601307189542484,
+          "low": 0.6261437908496732,
+          "high": 0.6954248366013072,
+          "n": 765
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.00851063829787234,
+          "low": 0.0,
+          "high": 0.02127659574468085,
+          "n": 235
+        },
+        "r@10": {
+          "mean": 0.02127659574468085,
+          "low": 0.00425531914893617,
+          "high": 0.0425531914893617,
+          "n": 235
+        }
+      }
+    },
+    "system-A": {
+      "all": {
+        "r@5": {
+          "mean": 0.802,
+          "low": 0.777,
+          "high": 0.827,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.926,
+          "low": 0.909,
+          "high": 0.943,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.8758169934640523,
+          "low": 0.8509803921568627,
+          "high": 0.8993464052287582,
+          "n": 765
+        },
+        "r@10": {
+          "mean": 0.9477124183006536,
+          "low": 0.9320261437908497,
+          "high": 0.9633986928104575,
+          "n": 765
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.5617021276595745,
+          "low": 0.502127659574468,
+          "high": 0.6212765957446809,
+          "n": 235
+        },
+        "r@10": {
+          "mean": 0.8553191489361702,
+          "low": 0.8085106382978723,
+          "high": 0.8936170212765957,
+          "n": 235
+        }
+      }
+    }
+  },
+  "passage_recall": {
+    "dense": {
+      "all": {
+        "r@5": {
+          "mean": 0.72725,
+          "low": 0.71199375,
+          "high": 0.74325,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.76725,
+          "low": 0.752,
+          "high": 0.78300625,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.7843137254901961,
+          "low": 0.7666666666666667,
+          "high": 0.8019607843137255,
+          "n": 765
+        },
+        "r@10": {
+          "mean": 0.8300653594771242,
+          "low": 0.8130718954248366,
+          "high": 0.8477124183006536,
+          "n": 765
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.5414893617021277,
+          "low": 0.5287234042553192,
+          "high": 0.5542553191489362,
+          "n": 235
+        },
+        "r@10": {
+          "mean": 0.5627659574468085,
+          "low": 0.5478723404255319,
+          "high": 0.5797872340425532,
+          "n": 235
+        }
+      }
+    },
+    "system-A": {
+      "all": {
+        "r@5": {
+          "mean": 0.92075,
+          "low": 0.91,
+          "high": 0.93100625,
+          "n": 1000
+        },
+        "r@10": {
+          "mean": 0.96825,
+          "low": 0.96075,
+          "high": 0.9755,
+          "n": 1000
+        }
+      },
+      "2": {
+        "r@5": {
+          "mean": 0.9379084967320261,
+          "low": 0.9254901960784314,
+          "high": 0.949673202614379,
+          "n": 765
+        },
+        "r@10": {
+          "mean": 0.9738562091503268,
+          "low": 0.9660130718954248,
+          "high": 0.9816993464052287,
+          "n": 765
+        }
+      },
+      "4": {
+        "r@5": {
+          "mean": 0.8648936170212767,
+          "low": 0.8446808510638298,
+          "high": 0.8861702127659574,
+          "n": 235
+        },
+        "r@10": {
+          "mean": 0.95,
+          "low": 0.9319148936170213,
+          "high": 0.9648936170212766,
+          "n": 235
+        }
+      }
+    }
+  },
+  "comparisons": {},
+  "latency_ms": {
+    "dense": {
+      "p50": 6.55146449980748,
+      "p95": 9.807780350047324
+    },
+    "system-A": {
+      "p50": 39.86563299986301,
+      "p95": 50.7359457504208
+    }
+  },
+  "ann_calls_per_question": {},
+  "pushes_per_question": {},
+  "waterfall": {},
+  "encoder_cache": {
+    "hits": 7120,
+    "misses": 0
+  },
+  "decision": null,
+  "total_seconds": 186.2367014020001,
+  "run_id": "a991b29d-4268-4b96-92c7-9c4204854c15",
+  "corpus_id": "2wiki-nNone-s0-895cba29"
+}
