@@ -156,3 +156,24 @@ Mapped to the gates in `04-evaluation-and-gates.md`.
 | Gate 2 (weeks 9–12) | RQ5, cross-corpus, ablations | Preprint, code release, blog post, venue submission |
 
 **Paper outline:** introduction; related work; problem formulation (Section 4); method; experiments (RQ1–RQ5); analysis (waterfall, failure cases, ablations); extensions (one short section on additions); limitations; conclusion.
+
+## Novelty audit (2026-11-03): close prior work found; claims must be narrowed
+A web search found recent LLM-free graph-RAG work that overlaps with HSI's graph and walk. Only search
+summaries were read so far (arxiv.org is blocked here); each paper must be read before any public claim.
+
+| Work | Overlap with HSI | Source |
+|---|---|---|
+| SPRIG, "Democratizing GraphRAG" (arXiv 2602.23372, Feb 2026) | NER co-occurrence graph, sparse PPR on CPU, title aliases, hub pruning, entity + document seeds; zero tokens | arxiv.org/html/2602.23372v1 |
+| LinearRAG (arXiv 2510.10114, ICLR 2026) | Relation-free graph from lightweight entity extraction, zero indexing tokens, reports beating HippoRAG 2 | iclr.cc/virtual/2026/poster/10007603 |
+| NoLLMRAG (ICLR 2026 submission) | LLM-free in indexing and retrieval | openreview.net/forum?id=KIUOtEKzzN |
+| TERAG (arXiv 2509.18667), LiteSemRAG (2604.16350), EHRAG (2604.17458), token co-occurrence graphs (2606.30093) | Low- or zero-token graph construction | arxiv.org |
+| "Read the Route: attention-steered hypergraph retrieval" (arXiv 2610.35412) | Possibly question-steered traversal; must be read | arxiv.org/html/2610.35412 |
+| Microsoft LazyGraphRAG | NLP-only indexing, LLM deferred to query time | microsoft.com/en-us/research/blog/lazygraphrag |
+| IndexRAG (arXiv 2603.16415) | Index-time bridging facts (like our withdrawn RQ1) | github.com/Continuum-AI-Corp/IndexRAG |
+
+**Consequence.** "An LLM-free graph plus PPR beats dense retrieval" is **not** a new claim. What may still be
+new, pending the reading: (1) transitions learned listwise from gold chains with the 8 features of decision
+0007; (2) local push with learned per-question transitions, with flat cost as N grows; (3) a corpus-learned,
+model-free name extractor instead of an NER model; (4) the scale study itself: whether LLM-free graph gains
+survive corpus growth (decisions 0013–0016), including the negative result so far. A head-to-head against
+SPRIG and LinearRAG on the same sets is required before a paper.
