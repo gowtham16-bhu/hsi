@@ -1,0 +1,215 @@
+{
+  "kind": "bench-scale",
+  "config": {
+    "questions": {
+      "dataset": "musique",
+      "data_file": "data/musique/musique_ans_v1.0_train.jsonl"
+    },
+    "question_count": 200,
+    "seed": 7,
+    "exclude_samples": [
+      {
+        "seed": 0,
+        "size": 1000
+      },
+      {
+        "seed": 1,
+        "size": 2000
+      }
+    ],
+    "pool": [
+      {
+        "dataset": "musique",
+        "data_file": "data/musique/musique_ans_v1.0_train.jsonl"
+      },
+      {
+        "dataset": "2wiki",
+        "data_file": "data/2wiki/dev.json"
+      }
+    ],
+    "sizes": [
+      10000,
+      40000,
+      140000
+    ],
+    "encoder": {
+      "plugin": "onnx",
+      "options": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "onnx_file": "onnx/model.onnx",
+        "max_seq_length": 512,
+        "batch_size": 32,
+        "query_instruction": "Represent this sentence for searching relevant passages: "
+      }
+    },
+    "vector_store": {
+      "plugin": "faiss",
+      "options": {}
+    },
+    "cache_dir": ".cache/hsi",
+    "out_dir": "runs/bench",
+    "graph": {
+      "fan_out": 32,
+      "hub_degree_cap": 200,
+      "bidirectional": true,
+      "co_mention": true,
+      "weight_multi_token": 0.9,
+      "weight_single_token": 0.6,
+      "reverse_factor": 0.85,
+      "co_mention_multi_token": 0.7,
+      "co_mention_single_token": 0.45,
+      "mention_extractor": {
+        "plugin": "capitalized",
+        "options": {
+          "min_cap_ratio": 0.5,
+          "min_join_count": 2,
+          "min_join_share": 0.8,
+          "max_join_tokens": 2,
+          "max_words": 6,
+          "min_chars": 3,
+          "max_clitic_chars": 2
+        }
+      },
+      "edge_scorer": null
+    },
+    "transition_model": "runs/models/transitions-musique-v2-fan32.json",
+    "ppr": {
+      "seeds": 3,
+      "restart": 0.5,
+      "iterations": 50,
+      "tolerance": 1e-06,
+      "beta": 0.0,
+      "rank_by": "total",
+      "keep_seeds": 0
+    },
+    "push": {
+      "seeds": 3,
+      "restart": 0.5,
+      "epsilon": 0.0001,
+      "beta": 0.0,
+      "max_pushes": 100000
+    },
+    "global_ppr_max_size": 140000,
+    "k": 5
+  },
+  "config_hash": "14ea5d075d7f9769",
+  "questions": 200,
+  "machine": "Linux-6.18.44-fc-v230-x86_64-with-glibc2.39",
+  "llm_calls": 0,
+  "rows": [
+    {
+      "passages": 10000,
+      "edges": 272339,
+      "csr_bytes_per_edge": 24.52610900385182,
+      "build_s": {
+        "encode_and_index": 0.2782518789999813,
+        "graph": 7.007653528000446
+      },
+      "peak_rss_mb": 1208.66015625,
+      "pushes_per_query": {
+        "p50": 497.5,
+        "p95": 714.3999999999999,
+        "max": 843
+      },
+      "vectors_read_per_query": {
+        "p50": 2978.0,
+        "p95": 4404.699999999999
+      },
+      "latency_ms": {
+        "seed_search": {
+          "p50": 3.4263544998793805,
+          "p95": 26.422402549542287
+        },
+        "push": {
+          "p50": 52.843273999769735,
+          "p95": 82.34073764974708
+        },
+        "global": {
+          "p50": 72.82156199971723,
+          "p95": 124.19345804969424
+        }
+      },
+      "passage_recall@5": {
+        "dense": 0.55875,
+        "push": 0.6483333333333333,
+        "global": 0.6483333333333333
+      }
+    },
+    {
+      "passages": 40000,
+      "edges": 1067120,
+      "csr_bytes_per_edge": 24.5306319814079,
+      "build_s": {
+        "encode_and_index": 0.7567738779998763,
+        "graph": 37.67162941700008
+      },
+      "peak_rss_mb": 1623.54296875,
+      "pushes_per_query": {
+        "p50": 537.0,
+        "p95": 723.3999999999999,
+        "max": 862
+      },
+      "vectors_read_per_query": {
+        "p50": 4137.5,
+        "p95": 6826.3499999999985
+      },
+      "latency_ms": {
+        "seed_search": {
+          "p50": 9.305095000399888,
+          "p95": 28.383468050242293
+        },
+        "push": {
+          "p50": 60.61792350010364,
+          "p95": 93.5775362498134
+        },
+        "global": {
+          "p50": 271.21279449966096,
+          "p95": 872.9144133505085
+        }
+      },
+      "passage_recall@5": {
+        "dense": 0.48458333333333337,
+        "push": 0.5541666666666667,
+        "global": 0.5516666666666666
+      }
+    },
+    {
+      "passages": 140000,
+      "edges": 3724902,
+      "csr_bytes_per_edge": 24.52123787417763,
+      "build_s": {
+        "encode_and_index": 4.638253181999971,
+        "graph": 128.26199502300005
+      },
+      "peak_rss_mb": 3308.8203125,
+      "pushes_per_query": {
+        "p50": 515.0,
+        "p95": 738.05,
+        "max": 900
+      },
+      "vectors_read_per_query": {
+        "p50": 4402.5,
+        "p95": 7491.499999999999
+      },
+      "latency_ms": {
+        "seed_search": {
+          "p50": 13.814130499667954,
+          "p95": 19.648620100542754
+        },
+        "push": {
+          "p50": 57.46868000005634,
+          "p95": 110.26423589955809
+        },
+        "global": {
+          "p50": 3058.5064219999367,
+          "p95": 4190.369297949974
+        }
+      },
+      "passage_recall@5": {
+        "dense": 0.44833333333333336,
+        "push": 0.45,
+        "global": 0.45
+      }
+    }
+  ]
+}
